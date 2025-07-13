@@ -1,0 +1,44 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# production build
+/dist
+/build
+
+# misc
+.DS_Store
+.env
+.env.*.local
+.env.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# macOS & system files
+Thumbs.db
+ehthumbs.db
+Icon?
+*.swp
+
+# coverage reports
+/coverage
+
+# testing
+/jest-test-results.json
+
+# service workers
+workbox-*.js
+sw.js
+
+# Optional: logs
+logs
+*.log
