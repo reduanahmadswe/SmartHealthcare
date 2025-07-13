@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -12,13 +12,13 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 import RoleRoute from './components/common/RoleRoute';
 
 // Pages
-import LandingPage from './pages/LandingPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
-import PatientDashboard from './pages/patient/PatientDashboard';
 import DoctorDashboard from './pages/doctor/DoctorDashboard';
-import AdminDashboard from './pages/admin/AdminDashboard';
+import LandingPage from './pages/LandingPage';
 import NotFoundPage from './pages/NotFoundPage';
+import PatientDashboard from './pages/patient/PatientDashboard';
 
 // Styles
 import './index.css';
