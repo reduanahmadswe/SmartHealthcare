@@ -217,7 +217,6 @@ const prescriptionSchema = new mongoose.Schema({
 // Indexes for better performance
 prescriptionSchema.index({ patient: 1, prescriptionDate: -1 });
 prescriptionSchema.index({ doctor: 1, prescriptionDate: -1 });
-prescriptionSchema.index({ prescriptionNumber: 1 });
 prescriptionSchema.index({ status: 1 });
 prescriptionSchema.index({ 'medications.isControlled': 1 });
 

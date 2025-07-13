@@ -143,7 +143,6 @@ const inventorySchema = new mongoose.Schema({
 });
 
 // Indexes for better performance
-inventorySchema.index({ itemCode: 1 });
 inventorySchema.index({ category: 1 });
 inventorySchema.index({ status: 1 });
 inventorySchema.index({ isExpired: 1 });

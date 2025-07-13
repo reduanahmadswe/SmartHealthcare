@@ -301,7 +301,6 @@ const labTestSchema = new mongoose.Schema({
 labTestSchema.index({ patient: 1, scheduledDate: -1 });
 labTestSchema.index({ doctor: 1, scheduledDate: -1 });
 labTestSchema.index({ status: 1 });
-labTestSchema.index({ testCode: 1 });
 labTestSchema.index({ 'lab.name': 1 });
 labTestSchema.index({ priority: 1 });
 
