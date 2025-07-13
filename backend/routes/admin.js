@@ -651,6 +651,172 @@ router.post('/broadcast-email', requireAdmin, [
   });
 }));
 
+// @route   GET /api/admin/doctors/unverified
+// @desc    Get unverified doctors
+// @access  Private (Admin only)
+router.get('/doctors/unverified', requireAdmin, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+
+  const unverifiedDoctors = await User.find({
+    role: 'doctor',
+    isVerified: false,
+    isActive: true
+  })
+  .select('-password')
+  .sort({ createdAt: -1 })
+  .limit(limit * 1)
+  .skip((page - 1) * limit);
+
+  const total = await User.countDocuments({
+    role: 'doctor',
+    isVerified: false,
+    isActive: true
+  });
+
+  res.json({
+    success: true,
+    data: {
+      doctors: unverifiedDoctors,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalDoctors: total,
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1
+      }
+    }
+  });
+}));
+
+// @route   POST /api/admin/doctors/verify/:id
+// @desc    Verify a doctor
+// @access  Private (Admin only)
+router.post('/doctors/verify/:id', requireAdmin, asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { verificationNotes } = req.body;
+
+  const doctor = await User.findById(id);
+  
+  if (!doctor) {
+    return res.status(404).json({
+      success: false,
+      message: 'Doctor not found'
+    });
+  }
+
+  if (doctor.role !== 'doctor') {
+    return res.status(400).json({
+      success: false,
+      message: 'User is not a doctor'
+    });
+  }
+
+  if (doctor.isVerified) {
+    return res.status(400).json({
+      success: false,
+      message: 'Doctor is already verified'
+    });
+  }
+
+  // Update doctor verification status
+  doctor.isVerified = true;
+  doctor.verificationNotes = verificationNotes;
+  doctor.verifiedBy = req.user._id;
+  doctor.verifiedAt = new Date();
+  
+  await doctor.save();
+
+  // Send verification email to doctor
+  await sendEmail({
+    to: doctor.email,
+    subject: 'Account Verified - Smart Healthcare Assistant',
+    template: 'doctorVerified',
+    context: {
+      doctorName: doctor.firstName,
+      verificationNotes: verificationNotes || 'Your account has been verified successfully.'
+    }
+  });
+
+  res.json({
+    success: true,
+    message: 'Doctor verified successfully',
+    data: {
+      doctor: {
+        id: doctor._id,
+        name: `${doctor.firstName} ${doctor.lastName}`,
+        email: doctor.email,
+        specialization: doctor.doctorInfo?.specialization,
+        verifiedAt: doctor.verifiedAt
+      }
+    }
+  });
+}));
+
+// @route   POST /api/admin/doctors/reject/:id
+// @desc    Reject a doctor verification
+// @access  Private (Admin only)
+router.post('/doctors/reject/:id', requireAdmin, [
+  body('rejectionReason').notEmpty().withMessage('Rejection reason is required')
+], asyncHandler(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      errors: errors.array()
+    });
+  }
+
+  const { id } = req.params;
+  const { rejectionReason } = req.body;
+
+  const doctor = await User.findById(id);
+  
+  if (!doctor) {
+    return res.status(404).json({
+      success: false,
+      message: 'Doctor not found'
+    });
+  }
+
+  if (doctor.role !== 'doctor') {
+    return res.status(400).json({
+      success: false,
+      message: 'User is not a doctor'
+    });
+  }
+
+  if (doctor.isVerified) {
+    return res.status(400).json({
+      success: false,
+      message: 'Doctor is already verified'
+    });
+  }
+
+  // Send rejection email to doctor
+  await sendEmail({
+    to: doctor.email,
+    subject: 'Account Verification Rejected - Smart Healthcare Assistant',
+    template: 'doctorRejected',
+    context: {
+      doctorName: doctor.firstName,
+      rejectionReason
+    }
+  });
+
+  res.json({
+    success: true,
+    message: 'Doctor verification rejected',
+    data: {
+      doctor: {
+        id: doctor._id,
+        name: `${doctor.firstName} ${doctor.lastName}`,
+        email: doctor.email,
+        rejectionReason
+      }
+    }
+  });
+}));
+
 // @route   GET /api/admin/logs
 // @desc    Get system logs
 // @access  Private (Admin only)

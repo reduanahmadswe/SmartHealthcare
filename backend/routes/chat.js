@@ -3,6 +3,8 @@ const { body, validationResult } = require('express-validator');
 const { authenticateToken, requirePatient, requireDoctor } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 const Appointment = require('../models/Appointment');
+const Message = require('../models/Message');
+const User = require('../models/User');
 
 const router = express.Router();
 
@@ -154,6 +156,134 @@ router.get('/messages/:appointmentId', asyncHandler(async (req, res) => {
         hasPrevPage: page > 1
       }
     }
+  });
+}));
+
+// @route   GET /api/chat/conversations/:userId
+// @desc    Get user's conversations
+// @access  Private
+router.get('/conversations/:userId', asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { page = 1, limit = 10 } = req.query;
+
+  // Check access permissions
+  if (req.user.role === 'patient' && req.user._id.toString() !== userId) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. You can only view your own conversations.'
+    });
+  }
+
+  const conversations = await Message.getRecentConversations(userId, limit);
+
+  res.json({
+    success: true,
+    data: {
+      conversations,
+      pagination: {
+        currentPage: page,
+        totalConversations: conversations.length,
+        hasNextPage: conversations.length === limit,
+        hasPrevPage: page > 1
+      }
+    }
+  });
+}));
+
+// @route   GET /api/chat/messages/:conversationId
+// @desc    Get messages for a conversation
+// @access  Private
+router.get('/messages/:conversationId', asyncHandler(async (req, res) => {
+  const { conversationId } = req.params;
+  const { page = 1, limit = 50 } = req.query;
+
+  // Parse conversation ID to get user IDs
+  const [user1Id, user2Id] = conversationId.split('_');
+  
+  // Check access permissions
+  if (req.user.role === 'patient' && 
+      req.user._id.toString() !== user1Id && 
+      req.user._id.toString() !== user2Id) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. You can only view your own conversations.'
+    });
+  }
+
+  const messages = await Message.getConversation(user1Id, user2Id, limit, (page - 1) * limit);
+  const total = await Message.countDocuments({
+    $or: [
+      { sender: user1Id, receiver: user2Id },
+      { sender: user2Id, receiver: user1Id }
+    ],
+    isDeleted: false
+  });
+
+  res.json({
+    success: true,
+    data: {
+      messages,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalMessages: total,
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1
+      }
+    }
+  });
+}));
+
+// @route   POST /api/chat/send
+// @desc    Send a message
+// @access  Private
+router.post('/send', [
+  body('receiverId').isMongoId().withMessage('Valid receiver ID is required'),
+  body('message').notEmpty().withMessage('Message is required'),
+  body('messageType').optional().isIn(['text', 'image', 'file', 'prescription', 'system']),
+  body('fileData').optional().isObject().withMessage('File data must be an object'),
+  body('appointmentId').optional().isMongoId().withMessage('Valid appointment ID is required'),
+  body('replyTo').optional().isMongoId().withMessage('Valid reply message ID is required')
+], asyncHandler(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      errors: errors.array()
+    });
+  }
+
+  const { receiverId, message, messageType = 'text', fileData, appointmentId, replyTo } = req.body;
+
+  // Check if receiver exists
+  const receiver = await User.findById(receiverId);
+  if (!receiver) {
+    return res.status(404).json({
+      success: false,
+      message: 'Receiver not found'
+    });
+  }
+
+  // Create new message
+  const newMessage = new Message({
+    sender: req.user._id,
+    receiver: receiverId,
+    message,
+    messageType,
+    fileData,
+    appointmentId,
+    replyTo
+  });
+
+  await newMessage.save();
+
+  // Populate sender info for response
+  await newMessage.populate('sender', 'firstName lastName email profilePicture');
+
+  res.status(201).json({
+    success: true,
+    message: 'Message sent successfully',
+    data: newMessage
   });
 }));
 

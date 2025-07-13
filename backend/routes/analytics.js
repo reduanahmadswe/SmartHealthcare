@@ -7,6 +7,7 @@ const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
 const MedicalRecord = require('../models/MedicalRecord');
 const LabTest = require('../models/LabTest');
+const HealthData = require('../models/HealthData');
 
 const router = express.Router();
 
@@ -360,6 +361,108 @@ router.get('/vital-signs', requirePatient, asyncHandler(async (req, res) => {
   });
 }));
 
+// @route   GET /api/analytics/vitals/:userId
+// @desc    Get vitals analytics for a patient
+// @access  Private (Patient, Doctor, Admin)
+router.get('/vitals/:userId', asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  const { days = 30 } = req.query;
+
+  // Check access permissions
+  if (req.user.role === 'patient' && req.user._id.toString() !== userId) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. You can only view your own vitals.'
+    });
+  }
+
+  if (req.user.role === 'doctor') {
+    // Check if doctor has appointment with this patient
+    const Appointment = require('../models/Appointment');
+    const hasAppointment = await Appointment.findOne({
+      doctor: req.user._id,
+      patient: userId,
+      status: { $in: ['confirmed', 'completed'] }
+    });
+
+    if (!hasAppointment) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. No appointment history with this patient.'
+      });
+    }
+  }
+
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+
+  const vitalsHistory = await HealthData.find({
+    patient: userId,
+    createdAt: { $gte: startDate }
+  })
+  .sort({ createdAt: 1 })
+  .select('vitals measurements createdAt');
+
+  // Format data for charts
+  const chartData = {
+    bloodPressure: vitalsHistory.map(record => ({
+      date: record.createdAt,
+      systolic: record.vitals.bloodPressure?.systolic,
+      diastolic: record.vitals.bloodPressure?.diastolic
+    })).filter(item => item.systolic || item.diastolic),
+    
+    heartRate: vitalsHistory.map(record => ({
+      date: record.createdAt,
+      value: record.vitals.heartRate?.value
+    })).filter(item => item.value),
+    
+    temperature: vitalsHistory.map(record => ({
+      date: record.createdAt,
+      value: record.vitals.temperature?.value
+    })).filter(item => item.value),
+    
+    oxygenSaturation: vitalsHistory.map(record => ({
+      date: record.createdAt,
+      value: record.vitals.oxygenSaturation?.value
+    })).filter(item => item.value),
+    
+    weight: vitalsHistory.map(record => ({
+      date: record.createdAt,
+      value: record.measurements.weight?.value
+    })).filter(item => item.value),
+    
+    bmi: vitalsHistory.map(record => ({
+      date: record.createdAt,
+      value: record.measurements.bmi
+    })).filter(item => item.value)
+  };
+
+  // Calculate trends
+  const trends = {
+    bloodPressure: calculateTrend(chartData.bloodPressure, 'systolic'),
+    heartRate: calculateTrend(chartData.heartRate, 'value'),
+    temperature: calculateTrend(chartData.temperature, 'value'),
+    oxygenSaturation: calculateTrend(chartData.oxygenSaturation, 'value'),
+    weight: calculateTrend(chartData.weight, 'value'),
+    bmi: calculateTrend(chartData.bmi, 'value')
+  };
+
+  res.json({
+    success: true,
+    data: {
+      period: { startDate, endDate: new Date() },
+      vitalsHistory,
+      chartData,
+      trends,
+      summary: {
+        totalRecords: vitalsHistory.length,
+        abnormalRecords: vitalsHistory.filter(record => record.isAbnormal).length,
+        latestRecord: vitalsHistory[vitalsHistory.length - 1] || null
+      }
+    }
+  });
+}));
+
 // @route   POST /api/analytics/health-goals
 // @desc    Set health goals
 // @access  Private (Patient only)
@@ -505,6 +608,28 @@ const calculateGoalProgress = async (userId, goal) => {
     target: goal.target,
     percentage: progress,
     status: progress >= 100 ? 'completed' : progress >= 75 ? 'on_track' : 'needs_attention'
+  };
+};
+
+// Helper function to calculate trends
+const calculateTrend = (data, valueKey) => {
+  if (data.length < 2) return { trend: 'stable', change: 0 };
+  
+  const firstValue = data[0][valueKey];
+  const lastValue = data[data.length - 1][valueKey];
+  const change = lastValue - firstValue;
+  const percentChange = (change / firstValue) * 100;
+  
+  let trend = 'stable';
+  if (percentChange > 5) trend = 'increasing';
+  else if (percentChange < -5) trend = 'decreasing';
+  
+  return {
+    trend,
+    change,
+    percentChange: parseFloat(percentChange.toFixed(2)),
+    firstValue,
+    lastValue
   };
 };
 

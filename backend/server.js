@@ -22,6 +22,9 @@ const paymentRoutes = require('./routes/payments');
 const adminRoutes = require('./routes/admin');
 const chatRoutes = require('./routes/chat');
 const analyticsRoutes = require('./routes/analytics');
+const healthDataRoutes = require('./routes/healthData');
+const inventoryRoutes = require('./routes/inventory');
+const logsRoutes = require('./routes/logs');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -80,6 +83,9 @@ app.use('/api/payments', authenticateToken, paymentRoutes);
 app.use('/api/admin', authenticateToken, adminRoutes);
 app.use('/api/chat', authenticateToken, chatRoutes);
 app.use('/api/analytics', authenticateToken, analyticsRoutes);
+app.use('/api/health', authenticateToken, healthDataRoutes);
+app.use('/api/inventory', authenticateToken, inventoryRoutes);
+app.use('/api/logs', authenticateToken, logsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
