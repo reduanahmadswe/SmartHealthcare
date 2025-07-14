@@ -30,7 +30,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: "Doctor KYC", path: "/doctor-kyc", icon: IoPeopleOutline },
         { name: "Inventory", path: "/inventory", icon: IoFileTrayOutline },
         { name: "Activity Logs", path: "/logs", icon: IoClipboardOutline },
-        { name: "Settings", path: "/settings", icon: IoSettingsOutline },
+        { name: "Settings", path: "/admin/settings", icon: IoSettingsOutline },
       ];
     } else if (user?.role === "doctor") {
       return [

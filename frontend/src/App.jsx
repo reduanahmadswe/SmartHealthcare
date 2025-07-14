@@ -29,10 +29,12 @@ import DoctorAppointments from "./pages/doctor/DoctorAppointments";
 import DoctorChat from "./pages/doctor/DoctorChat";
 import DoctorPrescriptions from "./pages/doctor/DoctorPrescriptions";
 import DoctorReports from "./pages/doctor/DoctorReports";
+import DoctorSettings from "./pages/doctor/DoctorSettings";
 import Patients from "./pages/doctor/Patients";
 
 // Admin Pages
 import ActivityLogs from "./pages/admin/ActivityLogs";
+import AdminSettings from "./pages/admin/AdminSettings";
 import Analytics from "./pages/admin/Analytics";
 import DoctorKYC from "./pages/admin/DoctorKYC";
 import Inventory from "./pages/admin/Inventory";
@@ -199,6 +201,14 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/doctor/settings"
+          element={
+            <ProtectedRoute allowedRoles={["doctor"]}>
+              <DoctorSettings />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Protected Admin Routes */}
         <Route
@@ -238,6 +248,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <ActivityLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminSettings />
             </ProtectedRoute>
           }
         />
