@@ -501,4 +501,32 @@ router.get('/', asyncHandler(async (req, res) => {
   });
 }));
 
+// @route   GET /api/doctors/:id/patients
+// @desc    Get all unique patients for a doctor (current and previous)
+// @access  Private (Doctor or Admin)
+router.get('/:id/patients', authenticateToken, requireDoctor, asyncHandler(async (req, res) => {
+  const doctorId = req.params.id;
+
+  // Only allow the doctor themselves or admin to access
+  if (req.user._id.toString() !== doctorId && req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied'
+    });
+  }
+
+  const Appointment = require('../models/Appointment');
+  // Find all unique patient IDs for this doctor
+  const patientIds = await Appointment.distinct('patient', { doctor: doctorId });
+
+  // Get patient details
+  const patients = await User.find({ _id: { $in: patientIds } })
+    .select('firstName lastName email phone patientInfo');
+
+  res.json({
+    success: true,
+    data: { patients }
+  });
+}));
+
 module.exports = router; 

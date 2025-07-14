@@ -74,6 +74,11 @@ export const doctorService = {
   // Get doctor's patients
   getDoctorPatients: async (doctorId) => {
     try {
+      // If no doctorId is provided, get from localStorage user
+      if (!doctorId) {
+        const user = JSON.parse(localStorage.getItem('user'));
+        doctorId = user?._id;
+      }
       const response = await api.get(`/doctors/${doctorId}/patients`);
       return response.data;
     } catch (error) {

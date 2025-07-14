@@ -335,6 +335,44 @@ const emailTemplates = {
         </div>
       </div>
     `
+  }),
+
+  appointmentStatusUpdate: (context) => ({
+    subject: `Appointment ${context.newStatus.charAt(0).toUpperCase() + context.newStatus.slice(1)} - Smart Healthcare Assistant`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+          <h1 style="margin: 0; font-size: 28px;">Smart Healthcare Assistant</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">Appointment Status Update</p>
+        </div>
+        <div style="padding: 30px; background: #f9f9f9;">
+          <h2 style="color: #333; margin-bottom: 20px;">Hello ${context.patientName},</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+            Your appointment status has been updated to <b>${context.newStatus.replace('_', ' ')}</b>.
+          </p>
+          <div style="background: white; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="color: #333; margin-bottom: 15px;">Appointment Details</h3>
+            <p><strong>Doctor:</strong> Dr. ${context.doctorName}</p>
+            <p><strong>Date:</strong> ${context.appointmentDate}</p>
+            <p><strong>Time:</strong> ${context.appointmentTime}</p>
+          </div>
+          ${
+            context.newStatus === 'in_progress'
+              ? `<p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                  Your appointment has started. Please be ready to join if it's a video call, or proceed to the clinic if it's in person.
+                </p>`
+              : ''
+          }
+          ${context.notes ? `<p style="color: #666; line-height: 1.6;">Notes: ${context.notes}</p>` : ''}
+          <p style="color: #666; line-height: 1.6;">
+            Thank you for choosing Smart Healthcare Assistant.
+          </p>
+        </div>
+        <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
+          <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
+        </div>
+      </div>
+    `
   })
 };
 
