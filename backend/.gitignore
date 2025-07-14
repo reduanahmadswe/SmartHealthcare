@@ -1,22 +1,55 @@
+# Node modules
+node_modules/
 
-/node_modules
-
-
+# Environment variables
 .env
 
-
-/dist
-/build
-
-
+# Logs
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
 
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variable files
+.env.*.local
+
+# VSCode settings
+.vscode/
+
+# Build artifacts
+dist/
+build/
+
+# Coverage directory used by testing tools
+coverage/
+
+# Ignore system files
 .DS_Store
 Thumbs.db
 
+# Ignore any debug folders
+debug/
 
-.vscode/
+# Ignore backup files
+*.bak
+*.swp
+*.swo
+
+# Ignore test output
+test-output/

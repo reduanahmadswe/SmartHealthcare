@@ -63,7 +63,7 @@ const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
-          <p style="margin: 0;">© 2024 Smart Healthcare Assistant. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
         </div>
       </div>
     `
@@ -116,7 +116,7 @@ const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
-          <p style="margin: 0;">© 2024 Smart Healthcare Assistant. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
         </div>
       </div>
     `
@@ -159,7 +159,7 @@ const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
-          <p style="margin: 0;">© 2024 Smart Healthcare Assistant. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
         </div>
       </div>
     `
@@ -201,7 +201,7 @@ const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
-          <p style="margin: 0;">© 2024 Smart Healthcare Assistant. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
         </div>
       </div>
     `
@@ -250,7 +250,7 @@ const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
-          <p style="margin: 0;">© 2024 Smart Healthcare Assistant. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
         </div>
       </div>
     `
@@ -299,7 +299,7 @@ const emailTemplates = {
         </div>
         
         <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
-          <p style="margin: 0;">© 2024 Smart Healthcare Assistant. All rights reserved.</p>
+          <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
         </div>
       </div>
     `

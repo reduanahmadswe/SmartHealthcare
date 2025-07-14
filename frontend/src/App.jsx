@@ -40,9 +40,9 @@ import DoctorKYC from "./pages/admin/DoctorKYC";
 import Inventory from "./pages/admin/Inventory";
 
 // Common Pages
+import DashboardLayout from "./layouts/DashboardLayout";
 import LandingPage from "./pages/LandingPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import DashboardLayout from "./layouts/DashboardLayout";
 
 // Simple test component
 const TestComponent = () => (

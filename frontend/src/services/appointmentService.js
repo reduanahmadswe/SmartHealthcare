@@ -5,20 +5,25 @@ export const bookAppointment = async (appointmentData) => {
   return response.data;
 };
 
-export const checkDoctorAvailability = async (doctor, appointmentDate, appointmentTime, token) => {
+export const checkDoctorAvailability = async (doctor, appointmentDate, appointmentTime) => {
   const response = await api.get('/appointments/check', {
-    params: { doctor, appointmentDate, appointmentTime },
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    params: { doctor, appointmentDate, appointmentTime }
   });
   return response.data;
 };
 
 export const getDoctors = async () => {
-  const response = await api.get('/doctors');
-  return response.data.data.doctors;
+  const response = await api.get('/users/doctors');
+  return response.data.data.doctors || [];
 };
 
 export const appointmentService = {
+  // Book new appointment
+  bookAppointment: async (appointmentData) => {
+    const response = await api.post('/appointments', appointmentData);
+    return response.data;
+  },
+
   // Get user's appointments
   getAppointments: async (filters = {}) => {
     const params = new URLSearchParams();

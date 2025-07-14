@@ -31,8 +31,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
               secondary: "#fff",
             },
           },
-        }}
-      />
+          }}
+        />
+
     </BrowserRouter>
   </React.StrictMode>
 );

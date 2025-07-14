@@ -91,35 +91,45 @@ const bookAppointmentHandler = [
     await appointment.populate('patient', 'firstName lastName email phone');
 
     // Send confirmation email to patient
-    await sendEmail({
-      to: req.user.email,
-      subject: 'Appointment Booked - Smart Healthcare Assistant',
-      template: 'appointmentConfirmation',
-      context: {
-        patientName: req.user.firstName,
-        doctorName: `${doctor.firstName} ${doctor.lastName}`,
-        appointmentDate: appointmentDate,
-        appointmentTime: appointmentTime,
-        appointmentType: appointmentType,
-        appointmentMode: appointmentMode,
-        consultationFee: doctor.doctorInfo.consultationFee
-      }
-    });
+    try {
+      await sendEmail({
+        to: req.user.email,
+        subject: 'Appointment Booked - Smart Healthcare Assistant',
+        template: 'appointmentConfirmation',
+        context: {
+          patientName: req.user.firstName,
+          doctorName: `${doctor.firstName} ${doctor.lastName}`,
+          appointmentDate: appointmentDate,
+          appointmentTime: appointmentTime,
+          appointmentType: appointmentType,
+          appointmentMode: appointmentMode,
+          consultationFee: doctor.doctorInfo.consultationFee
+        }
+      });
+    } catch (emailError) {
+      console.error('Failed to send confirmation email:', emailError);
+      // Don't fail the appointment booking if email fails
+    }
 
     // Send notification email to doctor
-    await sendEmail({
-      to: doctor.email,
-      subject: 'New Appointment Request - Smart Healthcare Assistant',
-      template: 'newAppointmentRequest',
-      context: {
-        doctorName: doctor.firstName,
-        patientName: `${req.user.firstName} ${req.user.lastName}`,
-        appointmentDate: appointmentDate,
-        appointmentTime: appointmentTime,
-        appointmentType: appointmentType,
-        appointmentMode: appointmentMode
-      }
-    });
+    try {
+      await sendEmail({
+        to: doctor.email,
+        subject: 'New Appointment Request - Smart Healthcare Assistant',
+        template: 'newAppointmentRequest',
+        context: {
+          doctorName: doctor.firstName,
+          patientName: `${req.user.firstName} ${req.user.lastName}`,
+          appointmentDate: appointmentDate,
+          appointmentTime: appointmentTime,
+          appointmentType: appointmentType,
+          appointmentMode: appointmentMode
+        }
+      });
+    } catch (emailError) {
+      console.error('Failed to send doctor notification email:', emailError);
+      // Don't fail the appointment booking if email fails
+    }
 
     res.status(201).json({
       success: true,
@@ -130,6 +140,16 @@ const bookAppointmentHandler = [
     });
   })
 ];
+
+// @route   GET /api/appointments/test
+// @desc    Test endpoint to check if appointments route is working
+// @access  Public
+router.get('/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Appointments route is working'
+  });
+});
 
 // Support both POST /api/appointments and POST /api/appointments/book
 router.post('/', ...bookAppointmentHandler);

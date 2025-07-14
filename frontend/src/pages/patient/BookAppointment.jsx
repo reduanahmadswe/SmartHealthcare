@@ -48,8 +48,13 @@ const BookAppointment = () => {
   // Auto-fill fee when doctor is selected
   useEffect(() => {
     const selectedDoctor = doctors.find((d) => d._id === watch("doctorId"));
-    setFee(selectedDoctor ? selectedDoctor.fee : "");
-    setValue("fee", selectedDoctor ? selectedDoctor.fee : "");
+    setFee(
+      selectedDoctor ? selectedDoctor.doctorInfo?.consultationFee || 0 : ""
+    );
+    setValue(
+      "fee",
+      selectedDoctor ? selectedDoctor.doctorInfo?.consultationFee || 0 : ""
+    );
   }, [watch("doctorId"), setValue, doctors]);
 
   // Check availability when doctor/date/time changes
@@ -58,18 +63,13 @@ const BookAppointment = () => {
     const date = watch("appointmentDate");
     const time = watch("appointmentTime");
     if (doctorId && date && time) {
-      checkDoctorAvailability(doctorId, date, time, token)
-        .then((res) => setAvailability(res.data.available))
+      checkDoctorAvailability(doctorId, date, time)
+        .then((res) => setAvailability(res.available))
         .catch(() => setAvailability(null));
     } else {
       setAvailability(null);
     }
-  }, [
-    watch("doctorId"),
-    watch("appointmentDate"),
-    watch("appointmentTime"),
-    token,
-  ]);
+  }, [watch("doctorId"), watch("appointmentDate"), watch("appointmentTime")]);
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -86,12 +86,24 @@ const BookAppointment = () => {
         ...data,
         symptoms,
       };
-      await appointmentService.bookAppointment(payload, token);
+      await appointmentService.bookAppointment(payload);
       toast.success("Appointment booked successfully!");
       // Optionally redirect to /my-appointments
       // navigate('/my-appointments');
     } catch (err) {
-      toast.error(err.response?.data?.message || "Booking failed");
+      console.error("Booking error:", err);
+      if (err.response?.data?.errors) {
+        // Handle validation errors
+        const errorMessages = err.response.data.errors
+          .map((error) => error.msg)
+          .join(", ");
+        toast.error(errorMessages);
+      } else if (err.response?.data?.message) {
+        // Handle other API errors
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Booking failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -116,11 +128,11 @@ const BookAppointment = () => {
                 <option value="">Select Doctor</option>
                 {doctors.map((doc) => (
                   <option key={doc._id} value={doc._id}>
-                    {doc.name}{" "}
-                    {doc.specialization?.length
-                      ? `(${doc.specialization.join(", ")})`
+                    Dr. {doc.firstName} {doc.lastName}{" "}
+                    {doc.doctorInfo?.specialization?.length
+                      ? `(${doc.doctorInfo.specialization.join(", ")})`
                       : ""}{" "}
-                    - Fee: {doc.fee}
+                    - Fee: ${doc.doctorInfo?.consultationFee || 0}
                   </option>
                 ))}
               </select>

@@ -46,12 +46,22 @@ app.use(cors({
   credentials: true
 }));
 
+// Auth-specific rate limiting (more lenient)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // limit each IP to 50 login attempts per windowMs
+  message: 'Too many login attempts, please try again later.'
+});
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100 // limit each IP to 100 requests per windowMs
 });
 app.use('/api/', limiter);
+app.use('/api/auth/', authLimiter);
+
+
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -60,13 +70,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static files
 app.use('/uploads', express.static('uploads'));
 
-// Database connection
-// mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/smart-healthcare', {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// })
-// .then(() => console.log('✅ Connected to MongoDB'))
-// .catch(err => console.error('❌ MongoDB connection error:', err));
+
 
 mongoose.connect(process.env.MONGO_URI|| 'mongodb://localhost:27017/smart-healthcare');
 
