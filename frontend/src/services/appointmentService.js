@@ -1,12 +1,24 @@
 import api from './api';
 
-export const appointmentService = {
-  // Book new appointment
-  bookAppointment: async (appointmentData) => {
-    const response = await api.post('/appointments/book', appointmentData);
-    return response.data;
-  },
+export const bookAppointment = async (appointmentData) => {
+  const response = await api.post('/appointments', appointmentData);
+  return response.data;
+};
 
+export const checkDoctorAvailability = async (doctor, appointmentDate, appointmentTime, token) => {
+  const response = await api.get('/appointments/check', {
+    params: { doctor, appointmentDate, appointmentTime },
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  return response.data;
+};
+
+export const getDoctors = async () => {
+  const response = await api.get('/doctors');
+  return response.data.data.doctors;
+};
+
+export const appointmentService = {
   // Get user's appointments
   getAppointments: async (filters = {}) => {
     const params = new URLSearchParams();

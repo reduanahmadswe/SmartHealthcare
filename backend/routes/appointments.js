@@ -8,126 +8,132 @@ const { sendEmail } = require('../utils/emailService');
 
 const router = express.Router();
 
-// @route   POST /api/appointments/book
-// @desc    Book a new appointment
-// @access  Private (Patient only)
-router.post('/book', requirePatient, [
-  body('doctorId').isMongoId().withMessage('Valid doctor ID is required'),
-  body('appointmentDate').isISO8601().withMessage('Valid appointment date is required'),
-  body('appointmentTime').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).withMessage('Valid time format is required (HH:MM)'),
-  body('appointmentType').isIn(['consultation', 'follow_up', 'emergency', 'routine_checkup', 'vaccination']),
-  body('appointmentMode').isIn(['in_person', 'video_call', 'chat']),
-  body('symptoms').optional().isArray(),
-  body('patientNotes').optional().isString(),
-  body('isEmergency').optional().isBoolean()
-], asyncHandler(async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      errors: errors.array()
+// Booking handler function
+const bookAppointmentHandler = [
+  requirePatient,
+  [
+    body('doctorId').isMongoId().withMessage('Valid doctor ID is required'),
+    body('appointmentDate').isISO8601().withMessage('Valid appointment date is required'),
+    body('appointmentTime').matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/).withMessage('Valid time format is required (HH:MM)'),
+    body('appointmentType').isIn(['consultation', 'follow_up', 'emergency', 'routine_checkup', 'vaccination']),
+    body('appointmentMode').isIn(['in_person', 'video_call', 'chat']),
+    body('symptoms').optional().isArray(),
+    body('patientNotes').optional().isString(),
+    body('isEmergency').optional().isBoolean()
+  ],
+  asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        errors: errors.array()
+      });
+    }
+
+    const {
+      doctorId,
+      appointmentDate,
+      appointmentTime,
+      appointmentType,
+      appointmentMode,
+      symptoms,
+      patientNotes,
+      isEmergency
+    } = req.body;
+
+    // Check if doctor exists and is verified
+    const doctor = await User.findOne({
+      _id: doctorId,
+      role: 'doctor',
+      isVerified: true,
+      isActive: true
     });
-  }
 
-  const {
-    doctorId,
-    appointmentDate,
-    appointmentTime,
-    appointmentType,
-    appointmentMode,
-    symptoms,
-    patientNotes,
-    isEmergency
-  } = req.body;
+    if (!doctor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Doctor not found or not verified'
+      });
+    }
 
-  // Check if doctor exists and is verified
-  const doctor = await User.findOne({
-    _id: doctorId,
-    role: 'doctor',
-    isVerified: true,
-    isActive: true
-  });
+    // Check if appointment time is available
+    const isAvailable = await Appointment.checkAvailability(
+      doctorId,
+      appointmentDate,
+      appointmentTime
+    );
 
-  if (!doctor) {
-    return res.status(404).json({
-      success: false,
-      message: 'Doctor not found or not verified'
-    });
-  }
+    if (!isAvailable) {
+      return res.status(400).json({
+        success: false,
+        message: 'Selected time slot is not available'
+      });
+    }
 
-  // Check if appointment time is available
-  const isAvailable = await Appointment.checkAvailability(
-    doctorId,
-    appointmentDate,
-    appointmentTime
-  );
-
-  if (!isAvailable) {
-    return res.status(400).json({
-      success: false,
-      message: 'Selected time slot is not available'
-    });
-  }
-
-  // Create appointment
-  const appointment = new Appointment({
-    patient: req.user._id,
-    doctor: doctorId,
-    appointmentDate,
-    appointmentTime,
-    appointmentType,
-    appointmentMode,
-    symptoms,
-    patientNotes,
-    isEmergency,
-    consultationFee: doctor.doctorInfo.consultationFee
-  });
-
-  await appointment.save();
-
-  // Populate doctor and patient details
-  await appointment.populate('doctor', 'firstName lastName email phone');
-  await appointment.populate('patient', 'firstName lastName email phone');
-
-  // Send confirmation email to patient
-  await sendEmail({
-    to: req.user.email,
-    subject: 'Appointment Booked - Smart Healthcare Assistant',
-    template: 'appointmentConfirmation',
-    context: {
-      patientName: req.user.firstName,
-      doctorName: `${doctor.firstName} ${doctor.lastName}`,
-      appointmentDate: appointmentDate,
-      appointmentTime: appointmentTime,
-      appointmentType: appointmentType,
-      appointmentMode: appointmentMode,
+    // Create appointment
+    const appointment = new Appointment({
+      patient: req.user._id,
+      doctor: doctorId,
+      appointmentDate,
+      appointmentTime,
+      appointmentType,
+      appointmentMode,
+      symptoms,
+      patientNotes,
+      isEmergency,
       consultationFee: doctor.doctorInfo.consultationFee
-    }
-  });
+    });
 
-  // Send notification email to doctor
-  await sendEmail({
-    to: doctor.email,
-    subject: 'New Appointment Request - Smart Healthcare Assistant',
-    template: 'newAppointmentRequest',
-    context: {
-      doctorName: doctor.firstName,
-      patientName: `${req.user.firstName} ${req.user.lastName}`,
-      appointmentDate: appointmentDate,
-      appointmentTime: appointmentTime,
-      appointmentType: appointmentType,
-      appointmentMode: appointmentMode
-    }
-  });
+    await appointment.save();
 
-  res.status(201).json({
-    success: true,
-    message: 'Appointment booked successfully',
-    data: {
-      appointment
-    }
-  });
-}));
+    // Populate doctor and patient details
+    await appointment.populate('doctor', 'firstName lastName email phone');
+    await appointment.populate('patient', 'firstName lastName email phone');
+
+    // Send confirmation email to patient
+    await sendEmail({
+      to: req.user.email,
+      subject: 'Appointment Booked - Smart Healthcare Assistant',
+      template: 'appointmentConfirmation',
+      context: {
+        patientName: req.user.firstName,
+        doctorName: `${doctor.firstName} ${doctor.lastName}`,
+        appointmentDate: appointmentDate,
+        appointmentTime: appointmentTime,
+        appointmentType: appointmentType,
+        appointmentMode: appointmentMode,
+        consultationFee: doctor.doctorInfo.consultationFee
+      }
+    });
+
+    // Send notification email to doctor
+    await sendEmail({
+      to: doctor.email,
+      subject: 'New Appointment Request - Smart Healthcare Assistant',
+      template: 'newAppointmentRequest',
+      context: {
+        doctorName: doctor.firstName,
+        patientName: `${req.user.firstName} ${req.user.lastName}`,
+        appointmentDate: appointmentDate,
+        appointmentTime: appointmentTime,
+        appointmentType: appointmentType,
+        appointmentMode: appointmentMode
+      }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Appointment booked successfully',
+      data: {
+        appointment
+      }
+    });
+  })
+];
+
+// Support both POST /api/appointments and POST /api/appointments/book
+router.post('/', ...bookAppointmentHandler);
+router.post('/book', ...bookAppointmentHandler);
 
 // @route   GET /api/appointments
 // @desc    Get user's appointments
@@ -163,6 +169,74 @@ router.get('/', asyncHandler(async (req, res) => {
 
   const total = await Appointment.countDocuments(query);
 
+  res.json({
+    success: true,
+    data: {
+      appointments,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalAppointments: total,
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1
+      }
+    }
+  });
+}));
+
+// Add this route before any '/:id' route
+// @route   GET /api/appointments/patient
+// @desc    Get appointments for the current patient
+// @access  Private (Patient only)
+router.get('/patient', requirePatient, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const query = { patient: req.user._id };
+  const appointments = await Appointment.find(query)
+    .populate('doctor', 'firstName lastName email phone')
+    .sort({ appointmentDate: -1, appointmentTime: -1 })
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+  const total = await Appointment.countDocuments(query);
+  res.json({
+    success: true,
+    data: {
+      appointments,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalAppointments: total,
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1
+      }
+    }
+  });
+}));
+
+// Place this before any '/:id' route
+// @route   GET /api/appointments/check
+// @desc    Check doctor availability
+// @access  Private
+router.get('/check', authenticateToken, asyncHandler(async (req, res) => {
+  const { doctor, appointmentDate, appointmentTime } = req.query;
+  if (!doctor || !appointmentDate || !appointmentTime) {
+    return res.status(400).json({ success: false, message: 'Missing required query params.' });
+  }
+  const isAvailable = await Appointment.checkAvailability(doctor, appointmentDate, appointmentTime);
+  res.json({ success: true, available: isAvailable });
+}));
+
+// @route   GET /api/appointments/doctor
+// @desc    Get appointments for the current doctor
+// @access  Private (Doctor only)
+router.get('/doctor', requireDoctor, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const query = { doctor: req.user._id };
+  const appointments = await Appointment.find(query)
+    .populate('patient', 'firstName lastName email phone')
+    .sort({ appointmentDate: -1, appointmentTime: -1 })
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+  const total = await Appointment.countDocuments(query);
   res.json({
     success: true,
     data: {

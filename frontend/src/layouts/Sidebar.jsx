@@ -48,7 +48,6 @@ const Sidebar = ({ isOpen, onClose }) => {
         },
         { name: "Chat", path: "/doctor/chat", icon: IoChatbubbleOutline },
         { name: "Reports", path: "/doctor/reports", icon: IoFileTrayOutline },
-        // Optionally add:
         { name: "Settings", path: "/doctor/settings", icon: IoSettingsOutline },
       ];
     } else {
@@ -87,16 +86,8 @@ const Sidebar = ({ isOpen, onClose }) => {
 
   return (
     <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-30 bg-black bg-opacity-50 lg:hidden"
-          onClick={onClose}
-        />
-      )}
-
       {/* Sidebar */}
-      <div className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
+      <div className="sidebar">
         <div className="flex h-full flex-col">
           {/* Logo */}
           <div className="flex h-16 items-center justify-center border-b border-gray-200 dark:border-gray-700">
@@ -124,7 +115,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                       : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-100"
                   }`}
                   onClick={() => {
-                    if (window.innerWidth < 1024) {
+                    if (window.innerWidth < 1024 && onClose) {
                       onClose();
                     }
                   }}

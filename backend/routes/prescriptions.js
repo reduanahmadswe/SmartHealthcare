@@ -166,6 +166,64 @@ router.get('/', asyncHandler(async (req, res) => {
   });
 }));
 
+// Add this route before any '/:id' route
+// @route   GET /api/prescriptions/patient
+// @desc    Get prescriptions for the current patient
+// @access  Private (Patient only)
+router.get('/patient', requirePatient, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const query = { patient: req.user._id };
+  const prescriptions = await Prescription.find(query)
+    .populate('doctor', 'firstName lastName')
+    .populate('appointment', 'appointmentDate appointmentTime')
+    .sort({ prescriptionDate: -1 })
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+  const total = await Prescription.countDocuments(query);
+  res.json({
+    success: true,
+    data: {
+      prescriptions,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalPrescriptions: total,
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1
+      }
+    }
+  });
+}));
+
+// Place this before any '/:id' route
+// @route   GET /api/prescriptions/doctor
+// @desc    Get prescriptions for the current doctor
+// @access  Private (Doctor only)
+router.get('/doctor', requireDoctor, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const query = { doctor: req.user._id };
+  const prescriptions = await Prescription.find(query)
+    .populate('patient', 'firstName lastName')
+    .populate('appointment', 'appointmentDate appointmentTime')
+    .sort({ prescriptionDate: -1 })
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+  const total = await Prescription.countDocuments(query);
+  res.json({
+    success: true,
+    data: {
+      prescriptions,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalPrescriptions: total,
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1
+      }
+    }
+  });
+}));
+
 // @route   GET /api/prescriptions/:id
 // @desc    Get prescription by ID
 // @access  Private

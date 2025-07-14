@@ -42,6 +42,7 @@ import Inventory from "./pages/admin/Inventory";
 // Common Pages
 import LandingPage from "./pages/LandingPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import DashboardLayout from "./layouts/DashboardLayout";
 
 // Simple test component
 const TestComponent = () => (
@@ -83,10 +84,13 @@ const App = () => {
           path="/book-appointment"
           element={
             <ProtectedRoute allowedRoles={["patient"]}>
-              <BookAppointment />
+              <DashboardLayout>
+                <BookAppointment />
+              </DashboardLayout>
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/appointments"
           element={

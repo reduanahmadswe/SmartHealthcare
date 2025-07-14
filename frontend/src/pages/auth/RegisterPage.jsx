@@ -15,6 +15,7 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [formError, setFormError] = useState("");
   const { register: registerUser } = useAuth();
 
   const {
@@ -27,34 +28,52 @@ const RegisterPage = () => {
   const password = watch("password");
 
   const onSubmit = async (data) => {
+    setFormError("");
     setLoading(true);
     try {
       await registerUser(data);
     } catch (error) {
-      // Error is handled in AuthContext
+      console.error("Registration error:", error, error.response?.data);
+      if (error.response?.data?.message) {
+        setFormError(error.response.data.message);
+      } else if (
+        error.response?.data?.errors &&
+        Array.isArray(error.response.data.errors) &&
+        error.response.data.errors.length > 0
+      ) {
+        setFormError(error.response.data.errors.map((e) => e.msg).join(", "));
+      } else {
+        setFormError("Registration failed. Please check your input and try again.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="text-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 sm:px-8 lg:px-16">
+      <div className="w-full">
+        <div className="text-center mb-6">
           <div className="flex justify-center">
             <IoMedicalOutline className="h-12 w-12 text-primary-600" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="mt-4 text-3xl font-bold text-gray-900 dark:text-gray-100">
             Create your account
           </h2>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
             Join Smart Healthcare today
           </p>
         </div>
 
-        <Card>
+        <Card className="w-full max-w-5xl mx-auto">
+          {formError && (
+            <div className="mb-4 text-danger-600 dark:text-danger-400 text-center font-medium">
+              {formError}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="First Name"
                 required
@@ -132,39 +151,19 @@ const RegisterPage = () => {
                 Gender <span className="text-danger-500 ml-1">*</span>
               </label>
               <div className="grid grid-cols-3 gap-3">
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="male"
-                    {...register("gender", {
-                      required: "Please select a gender",
-                    })}
-                    className="mr-2"
-                  />
-                  Male
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="female"
-                    {...register("gender", {
-                      required: "Please select a gender",
-                    })}
-                    className="mr-2"
-                  />
-                  Female
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="radio"
-                    value="other"
-                    {...register("gender", {
-                      required: "Please select a gender",
-                    })}
-                    className="mr-2"
-                  />
-                  Other
-                </label>
+                {["male", "female", "other"].map((g) => (
+                  <label key={g} className="flex items-center">
+                    <input
+                      type="radio"
+                      value={g}
+                      {...register("gender", {
+                        required: "Please select a gender",
+                      })}
+                      className="mr-2"
+                    />
+                    {g.charAt(0).toUpperCase() + g.slice(1)}
+                  </label>
+                ))}
               </div>
               {errors.gender && (
                 <p className="text-sm text-danger-600 dark:text-danger-400 mt-1">
@@ -178,28 +177,22 @@ const RegisterPage = () => {
                 Role <span className="text-danger-500 ml-1">*</span>
               </label>
               <div className="grid grid-cols-2 gap-3">
-                <label className="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700">
-                  <input
-                    type="radio"
-                    value="patient"
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                    {...register("role", { required: "Please select a role" })}
-                  />
-                  <span className="ml-2 text-sm text-gray-900 dark:text-gray-100">
-                    Patient
-                  </span>
-                </label>
-                <label className="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700">
-                  <input
-                    type="radio"
-                    value="doctor"
-                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
-                    {...register("role", { required: "Please select a role" })}
-                  />
-                  <span className="ml-2 text-sm text-gray-900 dark:text-gray-100">
-                    Doctor
-                  </span>
-                </label>
+                {["patient", "doctor"].map((role) => (
+                  <label
+                    key={role}
+                    className="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                  >
+                    <input
+                      type="radio"
+                      value={role}
+                      className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300"
+                      {...register("role", { required: "Please select a role" })}
+                    />
+                    <span className="ml-2 text-sm text-gray-900 dark:text-gray-100">
+                      {role.charAt(0).toUpperCase() + role.slice(1)}
+                    </span>
+                  </label>
+                ))}
               </div>
               {errors.role && (
                 <p className="text-sm text-danger-600 dark:text-danger-400 mt-1">
@@ -260,19 +253,8 @@ const RegisterPage = () => {
               </button>
             </div>
 
-            {/* Optional: Address */}
-            <Input
-              label="Address"
-              error={errors.address?.message}
-              {...register("address")}
-            />
-
-            {/* Optional: Emergency Contact */}
-            <Input
-              label="Emergency Contact"
-              error={errors.emergencyContact?.message}
-              {...register("emergencyContact")}
-            />
+            <Input label="Address" error={errors.address?.message} {...register("address")} />
+            <Input label="Emergency Contact" error={errors.emergencyContact?.message} {...register("emergencyContact")} />
 
             <div className="flex items-center">
               <input
@@ -289,10 +271,7 @@ const RegisterPage = () => {
                 className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
               >
                 I agree to the{" "}
-                <Link
-                  to="/terms"
-                  className="text-primary-600 hover:text-primary-500"
-                >
+                <Link to="/terms" className="text-primary-600 hover:text-primary-500">
                   Terms and Conditions
                 </Link>
               </label>

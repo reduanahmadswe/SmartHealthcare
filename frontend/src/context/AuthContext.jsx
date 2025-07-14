@@ -1,208 +1,118 @@
-import React, { createContext, useContext, useEffect, useReducer } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
+// Create context
 const AuthContext = createContext();
 
-const initialState = {
-  user: null,
-  token: localStorage.getItem("token"),
-  isAuthenticated: false,
-  loading: true,
-  error: null,
-};
-
-const authReducer = (state, action) => {
-  switch (action.type) {
-    case "LOGIN_START":
-      return {
-        ...state,
-        loading: true,
-        error: null,
-      };
-    case "LOGIN_SUCCESS":
-      return {
-        ...state,
-        user: action.payload.user,
-        token: action.payload.token,
-        isAuthenticated: true,
-        loading: false,
-        error: null,
-      };
-    case "LOGIN_FAILURE":
-      return {
-        ...state,
-        loading: false,
-        error: action.payload,
-        isAuthenticated: false,
-      };
-    case "LOGOUT":
-      return {
-        ...state,
-        user: null,
-        token: null,
-        isAuthenticated: false,
-        loading: false,
-        error: null,
-      };
-    case "UPDATE_USER":
-      return {
-        ...state,
-        user: action.payload,
-      };
-    case "CLEAR_ERROR":
-      return {
-        ...state,
-        error: null,
-      };
-    case "SET_LOADING":
-      return {
-        ...state,
-        loading: action.payload,
-      };
-    default:
-      return state;
-  }
-};
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Set up axios interceptor for authentication
+  // Attach token to every request
   useEffect(() => {
-    if (state.token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${state.token}`;
+    if (token) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     } else {
       delete api.defaults.headers.common["Authorization"];
     }
-  }, [state.token]);
+  }, [token]);
 
-  // Check if user is authenticated on app load
+  // Check token validity on mount/refresh
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        try {
-          // Set a timeout to prevent hanging if backend is not available
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
-
-          const response = await api.get("/auth/me", {
-            signal: controller.signal,
-          });
-
-          clearTimeout(timeoutId);
-          dispatch({
-            type: "LOGIN_SUCCESS",
-            payload: {
-              user: response.data.user,
-              token,
-            },
-          });
-        } catch (error) {
-          console.log("Auth check failed:", error.message);
-          localStorage.removeItem("token");
-          dispatch({ type: "LOGOUT" });
-        }
-      } else {
-        dispatch({ type: "LOGOUT" });
+    const checkToken = async () => {
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const res = await api.get("/auth/me");
+        setUser(res.data.data.user);
+      } catch (err) {
+        logout();
+      } finally {
+        setLoading(false);
       }
     };
-
-    checkAuth();
+    checkToken();
+    // eslint-disable-next-line
   }, []);
 
+  // Login
   const login = async (credentials) => {
-    dispatch({ type: "LOGIN_START" });
+    setLoading(true);
     try {
-      const response = await api.post("/auth/login", credentials);
-      const { user, token } = response.data.data;
-
-      localStorage.setItem("token", token);
-      dispatch({
-        type: "LOGIN_SUCCESS",
-        payload: { user, token },
-      });
-
-      toast.success(`Welcome back, ${user.firstName}!`);
-
-      // Redirect based on role
-      if (user.role === "admin") {
-        navigate("/dashboard/admin");
-      } else if (user.role === "doctor") {
-        navigate("/dashboard/doctor");
-      } else {
-        navigate("/dashboard/patient");
-      }
-    } catch (error) {
-      const message = error.response?.data?.message || "Login failed";
-      dispatch({ type: "LOGIN_FAILURE", payload: message });
-      toast.error(message);
+      const res = await api.post("/auth/login", credentials);
+      const { user, token: jwt } = res.data.data;
+      setUser(user);
+      setToken(jwt);
+      localStorage.setItem("token", jwt);
+      api.defaults.headers.common["Authorization"] = `Bearer ${jwt}`;
+      toast.success(`Welcome, ${user.firstName}!`);
+      // Redirect based on role or previous location
+      const from =
+        location.state?.from?.pathname || getDashboardPath(user.role);
+      navigate(from, { replace: true });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const register = async (userData) => {
-    dispatch({ type: "LOGIN_START" });
-    try {
-      const response = await api.post("/auth/register", userData);
-      const { user, token } = response.data.data;
-
-      localStorage.setItem("token", token);
-      dispatch({
-        type: "LOGIN_SUCCESS",
-        payload: { user, token },
-      });
-
-      toast.success(`Welcome to Smart Healthcare, ${user.firstName}!`);
-
-      // Redirect based on role
-      if (user.role === "admin") {
-        navigate("/dashboard/admin");
-      } else if (user.role === "doctor") {
-        navigate("/dashboard/doctor");
-      } else {
-        navigate("/dashboard/patient");
-      }
-    } catch (error) {
-      const message = error.response?.data?.message || "Registration failed";
-      dispatch({ type: "LOGIN_FAILURE", payload: message });
-      toast.error(message);
-    }
-  };
-
+  // Logout
   const logout = () => {
+    setUser(null);
+    setToken(null);
     localStorage.removeItem("token");
-    dispatch({ type: "LOGOUT" });
-    toast.success("Logged out successfully");
-    navigate("/login");
+    delete api.defaults.headers.common["Authorization"];
+    navigate("/login", { replace: true });
   };
 
-  const updateUser = (userData) => {
-    dispatch({ type: "UPDATE_USER", payload: userData });
+  // Register
+  const registerUser = async (data) => {
+    setLoading(true);
+    try {
+      await api.post("/auth/register", data);
+      toast.success(
+        "Registration successful! Please check your email to verify your account."
+      );
+      navigate("/login", { replace: true });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Registration failed");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const clearError = () => {
-    dispatch({ type: "CLEAR_ERROR" });
+  // Helper: get dashboard path by role
+  const getDashboardPath = (role) => {
+    if (role === "admin") return "/dashboard/admin";
+    if (role === "doctor") return "/dashboard/doctor";
+    return "/dashboard/patient";
   };
 
-  const value = {
-    ...state,
-    login,
-    register,
-    logout,
-    updateUser,
-    clearError,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        loading,
+        login,
+        logout,
+        isAuthenticated: !!user,
+        getDashboardPath,
+        register: registerUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };

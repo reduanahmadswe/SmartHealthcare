@@ -145,6 +145,34 @@ router.get('/', asyncHandler(async (req, res) => {
   });
 }));
 
+// Add this route before any '/:id' route
+// @route   GET /api/medical-records/patient
+// @desc    Get medical records for the current patient
+// @access  Private (Patient only)
+router.get('/patient', requirePatient, asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10 } = req.query;
+  const query = { patient: req.user._id };
+  const medicalRecords = await MedicalRecord.find(query)
+    .populate('uploadedBy', 'firstName lastName')
+    .sort({ recordDate: -1, createdAt: -1 })
+    .limit(limit * 1)
+    .skip((page - 1) * limit);
+  const total = await MedicalRecord.countDocuments(query);
+  res.json({
+    success: true,
+    data: {
+      medicalRecords,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalRecords: total,
+        hasNextPage: page * limit < total,
+        hasPrevPage: page > 1
+      }
+    }
+  });
+}));
+
 // @route   GET /api/medical-records/:id
 // @desc    Get medical record by ID
 // @access  Private

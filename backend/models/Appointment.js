@@ -256,39 +256,12 @@ appointmentSchema.pre('save', function(next) {
 
 // Method to check availability
 appointmentSchema.statics.checkAvailability = async function(doctorId, date, time, duration = 30) {
-  const appointmentDateTime = new Date(date);
-  const [hours, minutes] = time.split(':').map(Number);
-  appointmentDateTime.setHours(hours, minutes, 0, 0);
-  
-  const endTime = new Date(appointmentDateTime.getTime() + duration * 60000);
-  
   const conflictingAppointment = await this.findOne({
     doctor: doctorId,
     appointmentDate: date,
-    status: { $in: ['pending', 'confirmed'] },
-    $or: [
-      {
-        appointmentTime: time
-      },
-      {
-        $and: [
-          { appointmentTime: { $lt: time } },
-          {
-            $expr: {
-              $gte: {
-                $add: [
-                  { $dateFromString: { dateString: { $concat: [date, "T", "$appointmentTime", ":00"] } } },
-                  { $multiply: ["$duration", 60000] }
-                ]
-              },
-              appointmentDateTime
-            }
-          }
-        ]
-      }
-    ]
+    appointmentTime: time,
+    status: { $in: ['pending', 'confirmed'] }
   });
-  
   return !conflictingAppointment;
 };
 

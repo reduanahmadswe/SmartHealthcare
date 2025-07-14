@@ -477,4 +477,28 @@ router.get('/specializations', asyncHandler(async (req, res) => {
   });
 }));
 
+// @route   GET /api/doctors
+// @desc    Get all verified and active doctors (for patient appointment booking)
+// @access  Public
+router.get('/', asyncHandler(async (req, res) => {
+  const doctors = await User.find({
+    role: 'doctor',
+    isVerified: true,
+    isActive: true
+  }).select('firstName lastName email doctorInfo consultationFee');
+
+  res.json({
+    success: true,
+    data: {
+      doctors: doctors.map(doc => ({
+        _id: doc._id,
+        name: `${doc.firstName} ${doc.lastName}`,
+        email: doc.email,
+        fee: doc.doctorInfo?.consultationFee || 0,
+        specialization: doc.doctorInfo?.specialization || [],
+      }))
+    }
+  });
+}));
+
 module.exports = router; 
