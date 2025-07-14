@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   IoEyeOffOutline,
@@ -14,7 +14,7 @@ import { useAuth } from "../../context/AuthContext";
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -26,11 +26,25 @@ const LoginPage = () => {
 
   const from = location.state?.from?.pathname || "/dashboard";
 
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      // Redirect based on role
+      if (user.role === "admin") {
+        navigate("/dashboard/admin", { replace: true });
+      } else if (user.role === "doctor") {
+        navigate("/dashboard/doctor", { replace: true });
+      } else {
+        navigate("/dashboard/patient", { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const onSubmit = async (data) => {
     setLoading(true);
     try {
       await login(data);
-      navigate(from, { replace: true });
+      // Only navigate if login was successful (isAuthenticated is true)
+      // You can get isAuthenticated from useAuth()
     } catch (error) {
       // Error is handled in AuthContext
     } finally {
