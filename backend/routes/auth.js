@@ -6,6 +6,7 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { sendEmail } = require('../utils/emailService');
 const { asyncHandler } = require('../middleware/errorHandler');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -381,7 +382,7 @@ router.post('/logout', asyncHandler(async (req, res) => {
 // @route   GET /api/auth/me
 // @desc    Get current user
 // @access  Private
-router.get('/me', asyncHandler(async (req, res) => {
+router.get('/me', authenticateToken, asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: {

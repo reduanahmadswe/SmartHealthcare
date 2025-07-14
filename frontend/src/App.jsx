@@ -6,6 +6,7 @@ import { AuthProvider } from "./context/AuthContext";
 // Auth Pages
 import LoginPage from "./pages/auth/LoginPage";
 import RegisterPage from "./pages/auth/RegisterPage";
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 
 // Dashboard Pages
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
@@ -65,6 +66,7 @@ const App = () => {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
 
         {/* Protected Patient Routes */}
         <Route
