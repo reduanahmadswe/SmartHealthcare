@@ -33,7 +33,7 @@ const DoctorAppointments = () => {
   const handleStatusChange = async (id, status) => {
     setActionLoading(id + status);
     try {
-      await appointmentService.updateAppointment(id, { status });
+      await appointmentService.updateAppointmentStatus(id, status);
       fetchAppointments();
     } catch (err) {
       alert("Failed to update appointment status");

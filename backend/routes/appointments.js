@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
-const { authenticateToken, requirePatient, requireDoctor, requireOwnership } = require('../middleware/auth');
+const { authenticateToken, requirePatient, requireDoctor, requireOwnership, requireDoctorOrAdmin } = require('../middleware/auth');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { sendEmail } = require('../utils/emailService');
 
@@ -310,7 +310,7 @@ router.get('/:id', asyncHandler(async (req, res) => {
 // @route   PUT /api/appointments/:id/status
 // @desc    Update appointment status
 // @access  Private (Doctor/Admin only)
-router.put('/:id/status', [requireDoctor], [
+router.put('/:id/status', [requireDoctorOrAdmin], [
   body('status').isIn(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show']),
   body('notes').optional().isString()
 ], asyncHandler(async (req, res) => {

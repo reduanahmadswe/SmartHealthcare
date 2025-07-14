@@ -114,4 +114,9 @@ export const appointmentService = {
     const response = await api.get(`/appointments/stats?period=${period}`);
     return response.data;
   },
+
+  updateAppointmentStatus: async (id, status, notes) => {
+    const response = await api.put(`/appointments/${id}/status`, { status, notes });
+    return response.data;
+  },
 }; 

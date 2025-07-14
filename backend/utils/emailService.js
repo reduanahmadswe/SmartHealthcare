@@ -303,6 +303,38 @@ const emailTemplates = {
         </div>
       </div>
     `
+  }),
+
+  newAppointmentRequest: (context) => ({
+    subject: 'New Appointment Request - Smart Healthcare Assistant',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+          <h1 style="margin: 0; font-size: 28px;">Smart Healthcare Assistant</h1>
+          <p style="margin: 10px 0 0 0; font-size: 16px;">New Appointment Request</p>
+        </div>
+        <div style="padding: 30px; background: #f9f9f9;">
+          <h2 style="color: #333; margin-bottom: 20px;">Hello Dr. ${context.doctorName},</h2>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+            You have received a new appointment request from <b>${context.patientName}</b>.
+          </p>
+          <div style="background: white; padding: 20px; border-radius: 5px; margin: 20px 0;">
+            <h3 style="color: #333; margin-bottom: 15px;">Appointment Details</h3>
+            <p><strong>Patient:</strong> ${context.patientName}</p>
+            <p><strong>Date:</strong> ${context.appointmentDate}</p>
+            <p><strong>Time:</strong> ${context.appointmentTime}</p>
+            <p><strong>Type:</strong> ${context.appointmentType}</p>
+            <p><strong>Mode:</strong> ${context.appointmentMode}</p>
+          </div>
+          <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+            Please log in to your dashboard to view and manage this appointment.
+          </p>
+        </div>
+        <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
+          <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
+        </div>
+      </div>
+    `
   })
 };
 

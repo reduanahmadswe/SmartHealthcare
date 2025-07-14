@@ -36,6 +36,9 @@ const BookAppointment = () => {
     formState: { errors },
   } = useForm();
 
+  // Calculate today's date in YYYY-MM-DD format for min attribute
+  const today = new Date().toISOString().split("T")[0];
+
   // Fetch doctors on mount
   useEffect(() => {
     setDoctorsLoading(true);
@@ -149,6 +152,7 @@ const BookAppointment = () => {
               type="date"
               {...register("appointmentDate", { required: true })}
               className="input w-full"
+              min={today}
             />
             {errors.appointmentDate && (
               <span className="text-danger-500 text-sm">Date is required</span>
