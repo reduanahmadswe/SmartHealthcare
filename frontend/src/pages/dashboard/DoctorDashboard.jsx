@@ -1,0 +1,356 @@
+import React, { useEffect, useState } from "react";
+import {
+  IoCalendarOutline,
+  IoChatbubbleOutline,
+  IoCheckmarkCircleOutline,
+  IoCloseCircleOutline,
+  IoDocumentTextOutline,
+  IoMedicalOutline,
+  IoPeopleOutline,
+  IoTimeOutline,
+} from "react-icons/io5";
+import { Link } from "react-router-dom";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import Button from "../../components/Button";
+import Card from "../../components/Card";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import { useAuth } from "../../context/AuthContext";
+import DashboardLayout from "../../layouts/DashboardLayout";
+import api from "../../services/api";
+
+const DoctorDashboard = () => {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    appointments: 0,
+    patients: 0,
+    prescriptions: 0,
+    pendingAppointments: 0,
+  });
+  const [recentAppointments, setRecentAppointments] = useState([]);
+  const [weeklyStats, setWeeklyStats] = useState([]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const [appointmentsRes, patientsRes, prescriptionsRes] =
+        await Promise.all([
+          api.get("/appointments/doctor"),
+          api.get("/patients"),
+          api.get("/prescriptions/doctor"),
+        ]);
+
+      const appointments = appointmentsRes.data;
+      const pendingAppointments = appointments.filter(
+        (apt) => apt.status === "scheduled"
+      );
+
+      setStats({
+        appointments: appointments.length,
+        patients: patientsRes.data.length,
+        prescriptions: prescriptionsRes.data.length,
+        pendingAppointments: pendingAppointments.length,
+      });
+
+      setRecentAppointments(appointments.slice(0, 5));
+
+      // Mock weekly stats for chart
+      setWeeklyStats([
+        { day: "Mon", appointments: 8, patients: 6 },
+        { day: "Tue", appointments: 12, patients: 10 },
+        { day: "Wed", appointments: 6, patients: 5 },
+        { day: "Thu", appointments: 15, patients: 12 },
+        { day: "Fri", appointments: 10, patients: 8 },
+        { day: "Sat", appointments: 4, patients: 3 },
+        { day: "Sun", appointments: 2, patients: 1 },
+      ]);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAppointmentAction = async (appointmentId, action) => {
+    try {
+      await api.patch(`/appointments/${appointmentId}`, {
+        status: action === "accept" ? "confirmed" : "cancelled",
+      });
+
+      // Refresh data
+      fetchDashboardData();
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const statusClasses = {
+      scheduled: "badge-warning",
+      confirmed: "badge-success",
+      completed: "badge-secondary",
+      cancelled: "badge-danger",
+    };
+    return statusClasses[status] || "badge-outline";
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-64">
+          <LoadingSpinner size="lg" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        {/* Welcome Section */}
+        <div className="bg-gradient-to-r from-secondary-600 to-secondary-700 rounded-lg p-6 text-white">
+          <h1 className="text-2xl font-bold mb-2">
+            Welcome back, Dr. {user?.lastName}!
+          </h1>
+          <p className="text-secondary-100">
+            Here's your practice overview for today.
+          </p>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="dashboard-grid">
+          <Card className="stats-card">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-primary-100 dark:bg-primary-900">
+                <IoCalendarOutline className="h-6 w-6 text-primary-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Total Appointments
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {stats.appointments}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="stats-card">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-warning-100 dark:bg-warning-900">
+                <IoTimeOutline className="h-6 w-6 text-warning-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Pending Appointments
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {stats.pendingAppointments}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="stats-card">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-secondary-100 dark:bg-secondary-900">
+                <IoPeopleOutline className="h-6 w-6 text-secondary-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Total Patients
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {stats.patients}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="stats-card">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-900">
+                <IoDocumentTextOutline className="h-6 w-6 text-purple-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                  Prescriptions
+                </p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {stats.prescriptions}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Weekly Stats Chart */}
+        <Card>
+          <Card.Header>
+            <Card.Title>Weekly Activity</Card.Title>
+            <Card.Description>
+              Your appointments and patient visits this week
+            </Card.Description>
+          </Card.Header>
+          <Card.Content>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={weeklyStats}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="day" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="appointments" fill="#3b82f6" />
+                  <Bar dataKey="patients" fill="#10b981" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card.Content>
+        </Card>
+
+        {/* Quick Actions */}
+        <Card>
+          <Card.Header>
+            <Card.Title>Quick Actions</Card.Title>
+            <Card.Description>
+              Access your most important features
+            </Card.Description>
+          </Card.Header>
+          <Card.Content>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Link
+                to="/appointments"
+                className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-primary-300 hover:bg-primary-50 dark:border-gray-700 dark:hover:border-primary-600 dark:hover:bg-primary-900/20 transition-colors"
+              >
+                <IoCalendarOutline className="h-8 w-8 text-primary-600 mb-2" />
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  View Appointments
+                </span>
+              </Link>
+
+              <Link
+                to="/patients"
+                className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-secondary-300 hover:bg-secondary-50 dark:border-gray-700 dark:hover:border-secondary-600 dark:hover:bg-secondary-900/20 transition-colors"
+              >
+                <IoPeopleOutline className="h-8 w-8 text-secondary-600 mb-2" />
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  Patient List
+                </span>
+              </Link>
+
+              <Link
+                to="/prescriptions"
+                className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 dark:border-gray-700 dark:hover:border-purple-600 dark:hover:bg-purple-900/20 transition-colors"
+              >
+                <IoDocumentTextOutline className="h-8 w-8 text-purple-600 mb-2" />
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  Write Prescriptions
+                </span>
+              </Link>
+
+              <Link
+                to="/chat"
+                className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 dark:border-gray-700 dark:hover:border-yellow-600 dark:hover:bg-yellow-900/20 transition-colors"
+              >
+                <IoChatbubbleOutline className="h-8 w-8 text-yellow-600 mb-2" />
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  Patient Chat
+                </span>
+              </Link>
+            </div>
+          </Card.Content>
+        </Card>
+
+        {/* Recent Appointments */}
+        <Card>
+          <Card.Header>
+            <Card.Title>Recent Appointments</Card.Title>
+            <Card.Description>
+              Manage your upcoming appointments
+            </Card.Description>
+          </Card.Header>
+          <Card.Content>
+            {recentAppointments.length > 0 ? (
+              <div className="space-y-4">
+                {recentAppointments.map((appointment) => (
+                  <div
+                    key={appointment._id}
+                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg dark:border-gray-700"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="p-2 rounded-full bg-primary-100 dark:bg-primary-900">
+                        <IoMedicalOutline className="h-5 w-5 text-primary-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-gray-100">
+                          {appointment.patient?.firstName}{" "}
+                          {appointment.patient?.lastName}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {new Date(appointment.date).toLocaleDateString()} at{" "}
+                          {new Date(appointment.date).toLocaleTimeString()}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {appointment.reason}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`badge ${getStatusBadge(appointment.status)}`}
+                      >
+                        {appointment.status}
+                      </span>
+                      {appointment.status === "scheduled" && (
+                        <div className="flex space-x-1">
+                          <Button
+                            size="sm"
+                            variant="success"
+                            onClick={() =>
+                              handleAppointmentAction(appointment._id, "accept")
+                            }
+                          >
+                            <IoCheckmarkCircleOutline className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={() =>
+                              handleAppointmentAction(appointment._id, "reject")
+                            }
+                          >
+                            <IoCloseCircleOutline className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <IoCalendarOutline className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  No appointments scheduled
+                </p>
+              </div>
+            )}
+          </Card.Content>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default DoctorDashboard;
