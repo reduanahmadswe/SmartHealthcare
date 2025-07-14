@@ -37,18 +37,19 @@ const Sidebar = ({ isOpen, onClose }) => {
         { name: "Dashboard", path: "/dashboard/doctor", icon: IoHomeOutline },
         {
           name: "Appointments",
-          path: "/appointments",
+          path: "/doctor/appointments",
           icon: IoCalendarOutline,
         },
         { name: "Patients", path: "/patients", icon: IoPeopleOutline },
         {
           name: "Prescriptions",
-          path: "/prescriptions",
+          path: "/doctor/prescriptions",
           icon: IoDocumentTextOutline,
         },
-        { name: "Chat", path: "/chat", icon: IoChatbubbleOutline },
-        { name: "Reports", path: "/reports", icon: IoFileTrayOutline },
-        { name: "Settings", path: "/settings", icon: IoSettingsOutline },
+        { name: "Chat", path: "/doctor/chat", icon: IoChatbubbleOutline },
+        { name: "Reports", path: "/doctor/reports", icon: IoFileTrayOutline },
+        // Optionally add:
+        { name: "Settings", path: "/doctor/settings", icon: IoSettingsOutline },
       ];
     } else {
       return [
