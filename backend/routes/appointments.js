@@ -681,4 +681,59 @@ router.get('/upcoming', asyncHandler(async (req, res) => {
   });
 }));
 
+// @route   PUT /api/appointments/:id/notes
+// @desc    Add or update consultation notes for an appointment (doctor only)
+// @access  Private (Doctor/Admin only)
+router.put('/:id/notes', [requireDoctorOrAdmin], [
+  body('diagnosis').optional().isString(),
+  body('treatment').optional().isString(),
+  body('followUp').optional().isString(),
+  body('signature').optional().isString(),
+], asyncHandler(async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      success: false,
+      errors: errors.array()
+    });
+  }
+
+  const { diagnosis, treatment, followUp, signature } = req.body;
+  const appointmentId = req.params.id;
+
+  const appointment = await Appointment.findById(appointmentId)
+    .populate('patient', 'firstName lastName email')
+    .populate('doctor', 'firstName lastName email');
+
+  if (!appointment) {
+    return res.status(404).json({
+      success: false,
+      message: 'Appointment not found'
+    });
+  }
+
+  // Check if doctor owns this appointment or is admin
+  const isOwner = appointment.doctor._id.toString() === req.user._id.toString();
+  const isAdmin = req.user.role === 'admin';
+  if (!isOwner && !isAdmin) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied'
+    });
+  }
+
+  if (diagnosis !== undefined) appointment.diagnosis = diagnosis;
+  if (treatment !== undefined) appointment.treatment = treatment;
+  if (followUp !== undefined) appointment.followUpNotes = followUp;
+  if (signature !== undefined) appointment.doctorNotes = signature;
+
+  await appointment.save();
+
+  res.json({
+    success: true,
+    message: 'Consultation notes updated successfully',
+    data: { appointment }
+  });
+}));
+
 module.exports = router; 

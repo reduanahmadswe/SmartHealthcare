@@ -42,13 +42,19 @@ const PatientDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [appointmentsRes, prescriptionsRes, healthDataRes, reportsRes] =
-        await Promise.all([
-          api.get("/appointments/patient"),
-          api.get("/prescriptions/patient"),
-          api.get("/health-data/patient"),
-          api.get("/medical-records/patient"),
-        ]);
+      const [
+        appointmentsRes,
+        patientsRes,
+        prescriptionsRes,
+        healthDataRes,
+        reportsRes,
+      ] = await Promise.all([
+        api.get("/appointments/patient"),
+        api.get(`/doctors/${user._id}/patients`),
+        api.get("/prescriptions/patient"),
+        api.get("/health-data/patient"),
+        api.get("/medical-records/patient"),
+      ]);
 
       setStats({
         appointments: appointmentsRes.data.length,
@@ -291,7 +297,9 @@ const PatientDashboard = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <span
-                        className={`badge ${getStatusBadge(appointment.status)}`}
+                        className={`badge ${getStatusBadge(
+                          appointment.status
+                        )}`}
                       >
                         {appointment.status}
                       </span>

@@ -107,5 +107,14 @@ export const adminService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  getAppointments: async (filters = {}) => {
+    const params = new URLSearchParams();
+    if (filters.status) params.append('status', filters.status);
+    if (filters.doctor) params.append('doctorId', filters.doctor);
+    if (filters.patient) params.append('patientId', filters.patient);
+    if (filters.date) params.append('date', filters.date);
+    return await api.get(`/admin/appointments?${params.toString()}`);
   }
 }; 

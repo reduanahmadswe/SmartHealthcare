@@ -33,6 +33,7 @@ import DoctorSettings from "./pages/doctor/DoctorSettings";
 import Patients from "./pages/doctor/Patients";
 
 // Admin Pages
+import { AdminAppointments } from "./pages/admin";
 import ActivityLogs from "./pages/admin/ActivityLogs";
 import AdminSettings from "./pages/admin/AdminSettings";
 import Analytics from "./pages/admin/Analytics";
@@ -252,6 +253,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <ActivityLogs />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/appointments"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminAppointments />
             </ProtectedRoute>
           }
         />

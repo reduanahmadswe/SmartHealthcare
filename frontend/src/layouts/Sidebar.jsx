@@ -26,6 +26,11 @@ const Sidebar = ({ isOpen, onClose }) => {
     if (user?.role === "admin") {
       return [
         { name: "Dashboard", path: "/dashboard/admin", icon: IoHomeOutline },
+        {
+          name: "Appointments",
+          path: "/admin/appointments",
+          icon: IoCalendarOutline,
+        },
         { name: "Analytics", path: "/analytics", icon: IoAnalyticsOutline },
         { name: "Doctor KYC", path: "/doctor-kyc", icon: IoPeopleOutline },
         { name: "Inventory", path: "/inventory", icon: IoFileTrayOutline },

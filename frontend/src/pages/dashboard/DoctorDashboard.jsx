@@ -47,18 +47,18 @@ const DoctorDashboard = () => {
       const [appointmentsRes, patientsRes, prescriptionsRes] =
         await Promise.all([
           api.get("/appointments/doctor"),
-          api.get("/patients"),
+          api.get(`/doctors/${user._id}/patients`),
           api.get("/prescriptions/doctor"),
         ]);
 
-      const appointments = appointmentsRes.data;
+      const appointments = appointmentsRes.data.data.appointments;
       const pendingAppointments = appointments.filter(
         (apt) => apt.status === "scheduled"
       );
 
       setStats({
         appointments: appointments.length,
-        patients: patientsRes.data.length,
+        patients: patientsRes.data.data.patients.length,
         prescriptions: prescriptionsRes.data.length,
         pendingAppointments: pendingAppointments.length,
       });
@@ -308,7 +308,9 @@ const DoctorDashboard = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <span
-                        className={`badge ${getStatusBadge(appointment.status)}`}
+                        className={`badge ${getStatusBadge(
+                          appointment.status
+                        )}`}
                       >
                         {appointment.status}
                       </span>
