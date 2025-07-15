@@ -8,6 +8,7 @@ import DashboardLayout from "../../layouts/DashboardLayout";
 import { appointmentService } from "../../services/appointmentService";
 import { medicalRecordsService } from "../../services/medicalRecordsService";
 import { prescriptionService } from "../../services/prescriptionService";
+import PrescriptionForm from "./PrescriptionForm";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All" },
@@ -454,31 +455,23 @@ const DoctorAppointments = () => {
           </form>
         </Modal>
 
-        {/* Prescription Modal (placeholder) */}
+        {/* Prescription Modal */}
         <Modal
           isOpen={showPrescriptionModal}
           onClose={() => setShowPrescriptionModal(false)}
           title="Write Prescription"
           size="xl"
         >
-          <div className="py-4 text-center text-gray-500 dark:text-gray-400">
-            Prescription form not yet implemented.
-            <br />
-            (You can implement a full prescription form here and call
-            prescriptionService.createPrescription)
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setShowPrescriptionModal(false)}
-            >
-              Close
-            </Button>
-            <Button type="button" disabled loading={prescriptionSubmitting}>
-              Save Prescription
-            </Button>
-          </div>
+          {selectedAppointment ? (
+            <PrescriptionForm
+              appointmentId={selectedAppointment._id}
+              appointmentPatient={selectedAppointment.patient}
+            />
+          ) : (
+            <div className="py-4 text-center text-gray-500 dark:text-gray-400">
+              No appointment selected.
+            </div>
+          )}
         </Modal>
 
         {/* Patient History Modal */}

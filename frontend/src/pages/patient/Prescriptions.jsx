@@ -11,6 +11,7 @@ const Prescriptions = () => {
   const [loading, setLoading] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     loadPrescriptions();
@@ -19,10 +20,11 @@ const Prescriptions = () => {
   const loadPrescriptions = async () => {
     try {
       setLoading(true);
+      setError("");
       const data = await prescriptionService.getPrescriptions();
-      setPrescriptions(data.prescriptions || []);
+      setPrescriptions(data.data?.prescriptions || []);
     } catch (error) {
-      console.error("Error loading prescriptions:", error);
+      setError("Error loading prescriptions");
     } finally {
       setLoading(false);
     }
@@ -46,19 +48,21 @@ const Prescriptions = () => {
 
   const viewPrescriptionDetails = async (prescriptionId) => {
     try {
+      setError("");
       const data = await prescriptionService.getPrescriptionById(
         prescriptionId
       );
-      setSelectedPrescription(data);
+      setSelectedPrescription(data.data);
       setShowModal(true);
     } catch (error) {
-      console.error("Error loading prescription details:", error);
+      setError("Error loading prescription details");
     }
   };
 
-  const downloadPrescription = (prescriptionId) => {
-    // This would typically generate and download a PDF
-    console.log("Downloading prescription:", prescriptionId);
+  const downloadPrescription = (pdfUrl) => {
+    if (pdfUrl) {
+      window.open(pdfUrl, "_blank");
+    }
   };
 
   if (loading) {
@@ -82,8 +86,8 @@ const Prescriptions = () => {
             View and manage your prescriptions
           </p>
         </div>
-
-        {prescriptions.length === 0 ? (
+        {error && <div className="text-danger-500 text-sm mb-2">{error}</div>}
+        {prescriptions.length === 0 && !loading ? (
           <Card>
             <Card.Content>
               <div className="text-center py-8">
@@ -120,56 +124,27 @@ const Prescriptions = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        {prescription.medicationName}
+                        {prescription.diagnosis?.primary || "Prescription"}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Dr. {prescription.doctor?.name || "Unknown Doctor"}
+                        Dr. {prescription.doctor?.firstName}{" "}
+                        {prescription.doctor?.lastName || "Unknown"}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {prescription.prescriptionDate
+                          ? new Date(
+                              prescription.prescriptionDate
+                            ).toLocaleDateString()
+                          : ""}
                       </p>
                     </div>
                     {getStatusBadge(prescription.status)}
                   </div>
                 </Card.Header>
                 <Card.Content className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400">
-                        Dosage:
-                      </span>
-                      <p className="font-medium">{prescription.dosage}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400">
-                        Frequency:
-                      </span>
-                      <p className="font-medium">{prescription.frequency}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400">
-                        Duration:
-                      </span>
-                      <p className="font-medium">{prescription.duration}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400">
-                        Prescribed:
-                      </span>
-                      <p className="font-medium">
-                        {formatDate(prescription.prescribedDate)}
-                      </p>
-                    </div>
+                  <div className="text-sm text-gray-700 dark:text-gray-300">
+                    <b>Medications:</b> {prescription.medications?.length || 0}
                   </div>
-
-                  {prescription.instructions && (
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        Instructions:
-                      </span>
-                      <p className="text-sm mt-1">
-                        {prescription.instructions}
-                      </p>
-                    </div>
-                  )}
-
                   <div className="flex space-x-2 pt-2">
                     <Button
                       onClick={() => viewPrescriptionDetails(prescription._id)}
@@ -180,9 +155,10 @@ const Prescriptions = () => {
                       View Details
                     </Button>
                     <Button
-                      onClick={() => downloadPrescription(prescription._id)}
+                      onClick={() => downloadPrescription(prescription.pdfUrl)}
                       size="sm"
                       variant="outline"
+                      disabled={!prescription.pdfUrl}
                     >
                       Download
                     </Button>
@@ -192,134 +168,79 @@ const Prescriptions = () => {
             ))}
           </div>
         )}
-
         {/* Prescription Details Modal */}
         {showModal && selectedPrescription && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
             <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
               <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
-                    Prescription Details
-                  </h2>
-                  <Button
-                    onClick={() => setShowModal(false)}
-                    variant="outline"
-                    size="sm"
-                  >
-                    ×
-                  </Button>
+                <h2 className="text-xl font-bold mb-2">Prescription Details</h2>
+                <div className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+                  <b>Doctor:</b> Dr. {selectedPrescription.doctor?.firstName}{" "}
+                  {selectedPrescription.doctor?.lastName}
                 </div>
-
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        Medication:
-                      </span>
-                      <p className="font-medium">
-                        {selectedPrescription.medicationName}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        Status:
-                      </span>
-                      <div className="mt-1">
-                        {getStatusBadge(selectedPrescription.status)}
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        Dosage:
-                      </span>
-                      <p className="font-medium">
-                        {selectedPrescription.dosage}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        Frequency:
-                      </span>
-                      <p className="font-medium">
-                        {selectedPrescription.frequency}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        Duration:
-                      </span>
-                      <p className="font-medium">
-                        {selectedPrescription.duration}
-                      </p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        Prescribed Date:
-                      </span>
-                      <p className="font-medium">
-                        {formatDate(selectedPrescription.prescribedDate)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {selectedPrescription.instructions && (
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        Instructions:
-                      </span>
-                      <p className="mt-1 text-sm">
-                        {selectedPrescription.instructions}
-                      </p>
+                <div className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+                  <b>Date:</b>{" "}
+                  {selectedPrescription.prescriptionDate
+                    ? new Date(
+                        selectedPrescription.prescriptionDate
+                      ).toLocaleDateString()
+                    : ""}
+                </div>
+                <div className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+                  <b>Diagnosis:</b> {selectedPrescription.diagnosis?.primary}
+                </div>
+                {selectedPrescription.medications &&
+                  selectedPrescription.medications.length > 0 && (
+                    <div className="mb-2">
+                      <b>Medications:</b>
+                      <ul className="list-disc ml-6">
+                        {selectedPrescription.medications.map((med, idx) => (
+                          <li key={idx} className="mb-1">
+                            <span className="font-medium">{med.name}</span> -{" "}
+                            {med.dosage?.amount} {med.dosage?.unit},{" "}
+                            {med.dosage?.frequency}, {med.dosage?.duration}
+                            {med.instructions && (
+                              <span>
+                                {" "}
+                                | <i>{med.instructions}</i>
+                              </span>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
-
-                  {selectedPrescription.sideEffects && (
-                    <div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm">
-                        Side Effects:
-                      </span>
-                      <p className="mt-1 text-sm">
-                        {selectedPrescription.sideEffects}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="border-t pt-4">
-                    <h3 className="font-semibold mb-2">Prescribing Doctor</h3>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-semibold">
-                        {selectedPrescription.doctor?.name?.charAt(0) || "D"}
-                      </div>
-                      <div>
-                        <p className="font-medium">
-                          {selectedPrescription.doctor?.name ||
-                            "Unknown Doctor"}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          {selectedPrescription.doctor?.specialization ||
-                            "General Medicine"}
-                        </p>
-                      </div>
-                    </div>
+                {selectedPrescription.followUp?.date && (
+                  <div className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+                    <b>Follow-up:</b>{" "}
+                    {new Date(
+                      selectedPrescription.followUp.date
+                    ).toLocaleDateString()}
                   </div>
-
-                  <div className="flex space-x-2 pt-4">
+                )}
+                {selectedPrescription.patientInstructions?.general && (
+                  <div className="mb-2 text-sm text-gray-700 dark:text-gray-300">
+                    <b>Advice:</b>{" "}
+                    {selectedPrescription.patientInstructions.general}
+                  </div>
+                )}
+                <div className="flex justify-end mt-4 gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Close
+                  </Button>
+                  {selectedPrescription.pdfUrl && (
                     <Button
+                      variant="primary"
                       onClick={() =>
-                        downloadPrescription(selectedPrescription._id)
+                        downloadPrescription(selectedPrescription.pdfUrl)
                       }
-                      className="flex-1"
                     >
-                      Download Prescription
+                      Download PDF
                     </Button>
-                    <Button
-                      onClick={() => setShowModal(false)}
-                      variant="outline"
-                    >
-                      Close
-                    </Button>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>

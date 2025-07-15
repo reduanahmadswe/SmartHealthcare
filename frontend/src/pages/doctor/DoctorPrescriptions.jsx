@@ -1,6 +1,7 @@
 import React from "react";
 import Card from "../../components/Card";
 import DashboardLayout from "../../layouts/DashboardLayout";
+import PrescriptionForm from "./PrescriptionForm";
 
 const DoctorPrescriptions = () => {
   return (
@@ -17,9 +18,7 @@ const DoctorPrescriptions = () => {
 
         <Card>
           <Card.Content>
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-              Prescription writing functionality will be implemented here.
-            </p>
+            <PrescriptionForm />
           </Card.Content>
         </Card>
       </div>
