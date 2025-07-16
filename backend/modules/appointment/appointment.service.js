@@ -1,5 +1,5 @@
 const Appointment = require('./appointment.model'); 
-const User = require('../../models/user/user.model'); 
+const User = require('../../modules/user/user.model'); 
 const { sendEmail } = require('../../utils/emailService');
 const mongoose = require('mongoose');
 

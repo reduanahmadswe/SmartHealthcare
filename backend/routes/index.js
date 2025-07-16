@@ -26,20 +26,20 @@ const express = require('express');
 const router = express.Router();
 
 // ✅ All route modules
-const UserRoutes  = require('../models/user/user.route');
+const UserRoutes  = require('../modules/user/user.route');
 
 const AuthRoutes = require('./auth');
-const DoctorRoutes = require('../models/doctor/doctor.route');
-const AppointmentRoutes = require('../models/appointment/appointment.route');
-const PrescriptionRoutes = require('../models/prescription/prescription.route');
+const DoctorRoutes = require('../modules/doctor/doctor.route');
+const AppointmentRoutes = require('../modules/appointment/appointment.route');
+const PrescriptionRoutes = require('../modules/prescription/prescription.route');
 // const MedicalRecordRoutes = require('../modules/medicalRecord/medicalRecord.route');
-const LabTestRoutes = require('../models/labTest/labTest.route');
+const LabTestRoutes = require('../modules/labTest/labTest.route');
 // const PaymentRoutes = require('../modules/payment/payment.route');
-const AdminRoutes = require('../models/admin/admin.route');
+const AdminRoutes = require('../modules/admin/admin.route');
 // const ChatRoutes = require('../modules/chat/chat.route');
 // const AnalyticsRoutes = require('../modules/analytics/analytics.route');
-const HealthDataRoutes = require('../models/healthData/healthData.route');
-// const InventoryRoutes = require('../modules/inventory/inventory.route');
+const HealthDataRoutes = require('../modules/healthData/healthData.route');
+const InventoryRoutes = require('../modules/inventory/inventory.route');
 // const LogRoutes = require('../modules/log/log.route');
 
 // ✅ All route use
@@ -55,7 +55,7 @@ router.use('/admin', AdminRoutes);
 // router.use('/chat', ChatRoutes);
 // router.use('/analytics', AnalyticsRoutes);
 router.use('/health', HealthDataRoutes);
-// router.use('/inventory', InventoryRoutes);
+router.use('/inventory', InventoryRoutes);
 // router.use('/logs', LogRoutes);
 
 // ✅ Export the router
