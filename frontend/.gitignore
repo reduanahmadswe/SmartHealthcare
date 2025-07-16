@@ -42,3 +42,4 @@ sw.js
 # Optional: logs
 logs
 *.log
+.vercel

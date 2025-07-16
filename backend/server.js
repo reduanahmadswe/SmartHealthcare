@@ -10,21 +10,8 @@ const socketIo = require('socket.io');
 // Load environment variables
 dotenv.config();
 
-// Import routes
-const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
-const doctorRoutes = require('./routes/doctors');
-const appointmentRoutes = require('./routes/appointments');
-const prescriptionRoutes = require('./routes/prescriptions');
-const medicalRecordsRoutes = require('./routes/medicalRecords');
-const labTestRoutes = require('./routes/labTests');
-const paymentRoutes = require('./routes/payments');
-const adminRoutes = require('./routes/admin');
-const chatRoutes = require('./routes/chat');
-const analyticsRoutes = require('./routes/analytics');
-const healthDataRoutes = require('./routes/healthData');
-const inventoryRoutes = require('./routes/inventory');
-const logsRoutes = require('./routes/logs');
+// Import routes from routes/index.js
+const routes = require('./routes');
 
 // Import middleware
 const { errorHandler } = require('./middleware/errorHandler');
@@ -46,63 +33,57 @@ app.use(cors({
   credentials: true
 }));
 
-// Auth-specific rate limiting (more lenient)
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100
+});
+
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // limit each IP to 50 login attempts per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 50,
   message: 'Too many login attempts, please try again later.'
 });
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
-});
+// Apply rate limiters
 app.use('/api/', limiter);
 app.use('/api/auth/', authLimiter);
-
-
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static files
+// Serve static files
 app.use('/uploads', express.static('uploads'));
 
+// MongoDB connection
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/smart-healthcare', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
 
-
-mongoose.connect(process.env.MONGO_URI|| 'mongodb://localhost:27017/smart-healthcare');
-
-// Socket.io connection handling
+// Socket.io connection
 require('./socket/chatSocket')(io);
 
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', authenticateToken, userRoutes);
-app.use('/api/doctors', doctorRoutes);
-app.use('/api/appointments', authenticateToken, appointmentRoutes);
-app.use('/api/prescriptions', authenticateToken, prescriptionRoutes);
-app.use('/api/medical-records', authenticateToken, medicalRecordsRoutes);
-app.use('/api/lab-tests', authenticateToken, labTestRoutes);
-app.use('/api/payments', authenticateToken, paymentRoutes);
-app.use('/api/admin', authenticateToken, adminRoutes);
-app.use('/api/chat', authenticateToken, chatRoutes);
-app.use('/api/analytics', authenticateToken, analyticsRoutes);
-app.use('/api/health', authenticateToken, healthDataRoutes);
-app.use('/api/inventory', authenticateToken, inventoryRoutes);
-app.use('/api/logs', authenticateToken, logsRoutes);
+// Conditional token middleware: applies token check to all except /auth
+function authenticateTokenUnlessAuth(req, res, next) {
+  if (req.path.startsWith('/auth')) return next();
+  authenticateToken(req, res, next);
+}
+
+// Mount all routes
+app.use('/api', authenticateTokenUnlessAuth, routes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     message: 'Smart Healthcare Assistant API is running',
     timestamp: new Date().toISOString()
   });
 });
 
-// Error handling middleware
+// Error handler
 app.use(errorHandler);
 
 // 404 handler
@@ -112,11 +93,10 @@ app.use('*', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📱 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
   console.log(`🔗 API URL: http://localhost:${PORT}/api`);
 });
 
-module.exports = { app, server, io }; 
+module.exports = { app, server, io };
