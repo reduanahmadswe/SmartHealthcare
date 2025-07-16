@@ -107,6 +107,15 @@ const requirePatient = requireRole('patient');
 // Middleware to check if user is doctor
 const requireDoctor = requireRole('doctor');
 
+// Middleware to check if user is a lab
+const requireLab = (req, res, next) => { 
+    if (req.user && req.user.role === 'lab') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Access Denied: Requires Lab Role!' });
+    }
+};
+
 // Middleware to check if user is admin
 const requireAdmin = requireRole('admin');
 
@@ -272,6 +281,7 @@ module.exports = {
   requireRole,
   requirePatient,
   requireDoctor,
+  requireLab,
   requireAdmin,
   requireDoctorOrAdmin,
   requirePatientOrDoctor,
