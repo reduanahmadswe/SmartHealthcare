@@ -29,7 +29,7 @@ const router = express.Router();
 const UserRoutes  = require('../models/user/user.route');
 
 const AuthRoutes = require('./auth');
-// const DoctorRoutes = require('../modules/doctor/doctor.route');
+const DoctorRoutes = require('../models/doctor/doctor.route');
 const AppointmentRoutes = require('../models/appointment/appointment.route');
 const PrescriptionRoutes = require('../models/prescription/prescription.route');
 // const MedicalRecordRoutes = require('../modules/medicalRecord/medicalRecord.route');
@@ -45,7 +45,7 @@ const HealthDataRoutes = require('../models/healthData/healthData.route');
 // ✅ All route use
 router.use('/user', UserRoutes);
 router.use('/auth', AuthRoutes);
-// router.use('/doctors', DoctorRoutes);
+router.use('/doctors', DoctorRoutes);
 router.use('/appointments', AppointmentRoutes);
 router.use('/prescriptions', PrescriptionRoutes);
 // router.use('/medical-records', MedicalRecordRoutes);
