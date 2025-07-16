@@ -30,7 +30,7 @@ const UserRoutes  = require('../models/user/user.route');
 
 const AuthRoutes = require('./auth');
 // const DoctorRoutes = require('../modules/doctor/doctor.route');
-// const AppointmentRoutes = require('../modules/appointment/appointment.route');
+const AppointmentRoutes = require('../models/appointment/appointment.route');
 const PrescriptionRoutes = require('../models/prescription/prescription.route');
 // const MedicalRecordRoutes = require('../modules/medicalRecord/medicalRecord.route');
 const LabTestRoutes = require('../models/labTest/labTest.route');
@@ -46,7 +46,7 @@ const AdminRoutes = require('../models/admin/admin.route');
 router.use('/user', UserRoutes);
 router.use('/auth', AuthRoutes);
 // router.use('/doctors', DoctorRoutes);
-// router.use('/appointments', AppointmentRoutes);
+router.use('/appointments', AppointmentRoutes);
 router.use('/prescriptions', PrescriptionRoutes);
 // router.use('/medical-records', MedicalRecordRoutes);
 router.use('/lab-tests', LabTestRoutes);

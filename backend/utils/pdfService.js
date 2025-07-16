@@ -1,5 +1,5 @@
 const jsPDF = require('jspdf');
-const Prescription = require('../models/Prescription');
+const Prescription = require('../models/prescription/prescription.model');
 
 // Generate prescription PDF
 const generatePrescriptionPDF = async (prescription) => {
