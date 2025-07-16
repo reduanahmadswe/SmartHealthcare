@@ -2,7 +2,7 @@
 const User = require('../../modules/user/user.model');
 const Appointment = require('../appointment/appointment.model');
 const Prescription = require('../prescription/prescription.model');
-const MedicalRecord = require('../MedicalRecord');
+const MedicalRecord = require('../medicalRecord/medicalRecord.model');
 const LabTest = require('../../modules/labTest/labTest.model');
 const { sendEmail } = require('../../utils/emailService');
 
