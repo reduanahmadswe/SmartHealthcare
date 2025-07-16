@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user/user.model');
-const Appointment = require('../models/Appointment');
+const Appointment = require('../models/appointment/appointment.model');
 
 module.exports = (io) => {
   // Store connected users

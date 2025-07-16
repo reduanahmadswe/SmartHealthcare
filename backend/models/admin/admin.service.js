@@ -1,6 +1,6 @@
 // D:\SmartHealthcare\backend\services\admin.service.js
 const User = require('../../models/user/user.model');
-const Appointment = require('../Appointment');
+const Appointment = require('../appointment/appointment.model');
 const Prescription = require('../prescription/prescription.model');
 const MedicalRecord = require('../MedicalRecord');
 const LabTest = require('../../models/labTest/labTest.model');

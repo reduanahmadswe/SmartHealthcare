@@ -1,6 +1,6 @@
 // D:\SmartHealthcare\backend\services\prescription.service.js
 const Prescription = require('./prescription.model');
-const Appointment = require('../Appointment'); 
+const Appointment = require('../appointment/appointment.model'); 
 const {
     generatePrescriptionPDF
 } = require('../../utils/pdfService');

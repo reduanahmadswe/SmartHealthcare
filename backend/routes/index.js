@@ -38,7 +38,7 @@ const LabTestRoutes = require('../models/labTest/labTest.route');
 const AdminRoutes = require('../models/admin/admin.route');
 // const ChatRoutes = require('../modules/chat/chat.route');
 // const AnalyticsRoutes = require('../modules/analytics/analytics.route');
-// const HealthDataRoutes = require('../modules/healthData/healthData.route');
+const HealthDataRoutes = require('../models/healthData/healthData.route');
 // const InventoryRoutes = require('../modules/inventory/inventory.route');
 // const LogRoutes = require('../modules/log/log.route');
 
@@ -54,7 +54,7 @@ router.use('/lab-tests', LabTestRoutes);
 router.use('/admin', AdminRoutes);
 // router.use('/chat', ChatRoutes);
 // router.use('/analytics', AnalyticsRoutes);
-// router.use('/health', HealthDataRoutes);
+router.use('/health', HealthDataRoutes);
 // router.use('/inventory', InventoryRoutes);
 // router.use('/logs', LogRoutes);
 
