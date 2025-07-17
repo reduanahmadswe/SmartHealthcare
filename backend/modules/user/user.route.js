@@ -26,7 +26,7 @@ router.get('/health-data', authenticateToken, requirePatient, asyncHandler(contr
 router.put('/health-data', authenticateToken, requirePatient, updateHealthValidator, asyncHandler(controller.updateHealthData));
 
 // Doctor listings
-router.get('/doctors', asyncHandler(controller.getAllDoctors));
+router.get('/doctors', authenticateToken,asyncHandler(controller.getAllDoctors));
 router.get('/doctors/:id', asyncHandler(controller.getDoctorById));
 router.get('/doctors/:id/schedule', asyncHandler(controller.getDoctorSchedule));
 
