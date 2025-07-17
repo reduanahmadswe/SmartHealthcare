@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../modules/user/user.model');
 
 // Middleware to authenticate JWT token
 const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    const token = authHeader && authHeader.split(' ')[1]; 
 
     if (!token) {
       return res.status(401).json({ 
@@ -106,6 +106,15 @@ const requirePatient = requireRole('patient');
 
 // Middleware to check if user is doctor
 const requireDoctor = requireRole('doctor');
+
+// Middleware to check if user is a lab
+const requireLab = (req, res, next) => { 
+    if (req.user && req.user.role === 'lab') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Access Denied: Requires Lab Role!' });
+    }
+};
 
 // Middleware to check if user is admin
 const requireAdmin = requireRole('admin');
@@ -272,6 +281,7 @@ module.exports = {
   requireRole,
   requirePatient,
   requireDoctor,
+  requireLab,
   requireAdmin,
   requireDoctorOrAdmin,
   requirePatientOrDoctor,
