@@ -36,7 +36,7 @@ const MedicalRecordRoutes = require('../modules/medicalRecord/medicalRecord.rout
 const LabTestRoutes = require('../modules/labTest/labTest.route');
 // const PaymentRoutes = require('../modules/payment/payment.route');
 const AdminRoutes = require('../modules/admin/admin.route');
-// const ChatRoutes = require('../modules/chat/chat.route');
+const ChatRoutes = require('../modules/chat/chat.route');
 // const AnalyticsRoutes = require('../modules/analytics/analytics.route');
 const HealthDataRoutes = require('../modules/healthData/healthData.route');
 const InventoryRoutes = require('../modules/inventory/inventory.route');
@@ -52,7 +52,7 @@ router.use('/medical-records', MedicalRecordRoutes);
 router.use('/lab-tests', LabTestRoutes);
 // router.use('/payments', PaymentRoutes);
 router.use('/admin', AdminRoutes);
-// router.use('/chat', ChatRoutes);
+router.use('/chat', ChatRoutes);
 // router.use('/analytics', AnalyticsRoutes);
 router.use('/health', HealthDataRoutes);
 router.use('/inventory', InventoryRoutes);
