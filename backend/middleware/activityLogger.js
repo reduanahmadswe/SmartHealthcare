@@ -1,4 +1,4 @@
-const ActivityLog = require('../modules/ActivityLog');
+const ActivityLog = require('../modules/logs/logs.model');
 
 // Middleware to log activities
 const logActivity = (action, description, options = {}) => {

@@ -40,7 +40,7 @@ const AdminRoutes = require('../modules/admin/admin.route');
 // const AnalyticsRoutes = require('../modules/analytics/analytics.route');
 const HealthDataRoutes = require('../modules/healthData/healthData.route');
 const InventoryRoutes = require('../modules/inventory/inventory.route');
-// const LogRoutes = require('../modules/log/log.route');
+const LogRoutes = require('../modules/logs/logs.route');
 
 // ✅ All route use
 router.use('/user', UserRoutes);
@@ -56,7 +56,7 @@ router.use('/admin', AdminRoutes);
 // router.use('/analytics', AnalyticsRoutes);
 router.use('/health', HealthDataRoutes);
 router.use('/inventory', InventoryRoutes);
-// router.use('/logs', LogRoutes);
+router.use('/logs', LogRoutes);
 
 // ✅ Export the router
 module.exports = router;
