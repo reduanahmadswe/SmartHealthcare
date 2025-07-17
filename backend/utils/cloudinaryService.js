@@ -66,9 +66,11 @@ const uploadBufferToCloudinary = async (buffer, folder = 'smart-healthcare', opt
             });
           }
         }
+
+
       );
 
-      uploadStream.end(buffer);
+       uploadStream.end(Buffer.from(buffer));
     });
   } catch (error) {
     console.error('Error uploading buffer to Cloudinary:', error);

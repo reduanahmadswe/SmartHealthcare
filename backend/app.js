@@ -21,7 +21,7 @@ app.use(cors({
 // ✅ Rate limiters
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100
+  max: 1000000
 });
 
 const authLimiter = rateLimit({
@@ -31,7 +31,9 @@ const authLimiter = rateLimit({
 });
 
 // ✅ Apply limiters
-app.use('/api/', limiter);
+if (process.env.NODE_ENV === 'production') {
+  app.use('/api/', limiter);
+}
 app.use('/api/auth/', authLimiter);
 
 // ✅ Body parsers

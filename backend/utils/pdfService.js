@@ -1,5 +1,6 @@
-const jsPDF = require('jspdf');
-const Prescription = require('../modules/prescription/prescription.model');
+const { jsPDF } = require('jspdf');
+
+// const Prescription = require('../modules/prescription/prescription.model');
 
 // Generate prescription PDF
 const generatePrescriptionPDF = async (prescription) => {
@@ -11,6 +12,8 @@ const generatePrescriptionPDF = async (prescription) => {
     }
 
     const doc = new jsPDF();
+    doc.text(`Prescription for ${prescription.patient.firstName} ${prescription.patient.lastName}`, 10, 10);
+
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 20;
     let yPosition = 30;
