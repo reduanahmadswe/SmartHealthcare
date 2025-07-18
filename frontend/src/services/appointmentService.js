@@ -13,8 +13,9 @@ export const checkDoctorAvailability = async (doctor, appointmentDate, appointme
 };
 
 export const getDoctors = async () => {
-  const response = await api.get('/users/doctors');
-  return response.data.data.doctors || [];
+  const response = await api.get('/doctors');
+ // return response.data.data.doctors || [];
+ return response.data || [];
 };
 
 export const appointmentService = {

@@ -2,9 +2,10 @@ const express = require('express');
 const doctorController = require('./doctor.controller'); 
 const doctorValidation = require('./doctor.validation'); 
 const { authenticateToken, requireDoctor, requireAdmin } = require('../../middleware/auth'); 
-const { asyncHandler } = require('../../middleware/errorHandler'); 
+
 
 const router = express.Router();
+
 
 // @route   POST /api/doctors/register
 // @desc    Register a new doctor

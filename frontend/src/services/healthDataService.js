@@ -2,9 +2,9 @@ import api from './api';
 
 export const healthDataService = {
   // Get user's health data
-  getHealthData: async () => {
+  getHealthData: async (userId) => {
     try {
-      const response = await api.get('/health-data');
+      const response = await api.get(`/health/${userId}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -12,9 +12,9 @@ export const healthDataService = {
   },
 
   // Add new health data entry
-  addHealthData: async (data) => {
+  addHealthData: async (data, userId) => {
     try {
-      const response = await api.post('/health-data', data);
+      const response = await api.post('/health/add', { ...data, patientId: userId });
       return response.data;
     } catch (error) {
       throw error;
@@ -24,7 +24,7 @@ export const healthDataService = {
   // Update health data
   updateHealthData: async (id, data) => {
     try {
-      const response = await api.put(`/health-data/${id}`, data);
+      const response = await api.put(`/health/${id}`, data);
       return response.data;
     } catch (error) {
       throw error;
@@ -34,7 +34,7 @@ export const healthDataService = {
   // Delete health data
   deleteHealthData: async (id) => {
     try {
-      const response = await api.delete(`/health-data/${id}`);
+      const response = await api.delete(`/health/${id}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -42,9 +42,9 @@ export const healthDataService = {
   },
 
   // Get health data by date range
-  getHealthDataByDateRange: async (startDate, endDate) => {
+  getHealthDataByDateRange: async (userId, startDate, endDate) => {
     try {
-      const response = await api.get('/health-data/range', {
+      const response = await api.get(`/health/${userId}`, {
         params: { startDate, endDate }
       });
       return response.data;

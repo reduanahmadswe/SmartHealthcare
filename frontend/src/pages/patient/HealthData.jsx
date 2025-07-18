@@ -15,10 +15,12 @@ import Button from "../../components/Button";
 import Card from "../../components/Card";
 import Input from "../../components/Input";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import { useAuth } from "../../context/AuthContext";
 import DashboardLayout from "../../layouts/DashboardLayout";
 import api from "../../services/api";
 
 const HealthData = () => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [healthData, setHealthData] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -38,7 +40,7 @@ const HealthData = () => {
   const fetchHealthData = async () => {
     try {
       const response = await api.get(
-        `/health-data/patient?timeRange=${timeRange}`
+        `/health/${user._id}?timeRange=${timeRange}`
       );
       setHealthData(response.data);
     } catch (error) {
@@ -51,7 +53,7 @@ const HealthData = () => {
 
   const onSubmit = async (data) => {
     try {
-      await api.post("/health-data", data);
+      await api.post("/health/add", { ...data, patientId: user._id });
       toast.success("Health data added successfully");
       setShowForm(false);
       reset();
@@ -213,7 +215,9 @@ const HealthData = () => {
                         {new Date(data.date).toLocaleDateString()}
                       </span>
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(getVitalStatus("bloodPressure", data.bloodPressure))}`}
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          getVitalStatus("bloodPressure", data.bloodPressure)
+                        )}`}
                       >
                         {getVitalStatus("bloodPressure", data.bloodPressure)}
                       </span>

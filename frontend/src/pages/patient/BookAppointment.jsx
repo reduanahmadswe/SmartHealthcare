@@ -28,6 +28,7 @@ const BookAppointment = () => {
   const [doctorsLoading, setDoctorsLoading] = useState(true);
   const [fee, setFee] = useState("");
   const [availability, setAvailability] = useState(null);
+  const [selectedDoctorId, setSelectedDoctorId] = useState("");
   const {
     register,
     handleSubmit,
@@ -40,17 +41,39 @@ const BookAppointment = () => {
   const today = new Date().toISOString().split("T")[0];
 
   // Fetch doctors on mount
+  // useEffect(() => {
+  //   setDoctorsLoading(true);
+  //   getDoctors()
+  //     .then((response) => {
+  //       // Adjust this depending on your API shape
+  //       console.log("Doctors response:", response);
+  //       const docsArray = response?.data?.doctors || [];
+  //       if (Array.isArray(docsArray)) {
+  //         setDoctors(docsArray);
+  //       } else {
+  //         setDoctors([]);
+  //         console.warn("Expected doctors array but got:", docsArray);
+  //       }
+  //     })
+  //     .catch(() => setDoctors([]))
+  //     .finally(() => setDoctorsLoading(false));
+  // }, []);
   useEffect(() => {
     setDoctorsLoading(true);
     getDoctors()
-      .then((docs) => setDoctors(docs))
+      .then((data) => {
+        console.log("Doctors:", data);
+        setDoctors(
+          data && data.data && data.data.doctors ? data.data.doctors : []
+        );
+      })
       .catch(() => setDoctors([]))
       .finally(() => setDoctorsLoading(false));
   }, []);
 
   // Auto-fill fee when doctor is selected
   useEffect(() => {
-    const selectedDoctor = doctors.find((d) => d._id === watch("doctorId"));
+    const selectedDoctor = doctors.find((d) => d._id === selectedDoctorId);
     setFee(
       selectedDoctor ? selectedDoctor.doctorInfo?.consultationFee || 0 : ""
     );
@@ -58,7 +81,7 @@ const BookAppointment = () => {
       "fee",
       selectedDoctor ? selectedDoctor.doctorInfo?.consultationFee || 0 : ""
     );
-  }, [watch("doctorId"), setValue, doctors]);
+  }, [selectedDoctorId, setValue, doctors]);
 
   // Check availability when doctor/date/time changes
   useEffect(() => {
@@ -125,25 +148,28 @@ const BookAppointment = () => {
               <div className="text-center py-2">Loading doctors...</div>
             ) : (
               <select
-                {...register("doctorId", { required: true })}
+                value={selectedDoctorId}
+                onChange={(e) => setSelectedDoctorId(e.target.value)}
                 className="input w-full"
               >
                 <option value="">Select Doctor</option>
-                {doctors.map((doc) => (
-                  <option key={doc._id} value={doc._id}>
-                    Dr. {doc.firstName} {doc.lastName}{" "}
-                    {doc.doctorInfo?.specialization?.length
-                      ? `(${doc.doctorInfo.specialization.join(", ")})`
-                      : ""}{" "}
-                    - Fee: ${doc.doctorInfo?.consultationFee || 0}
-                  </option>
-                ))}
+                {Array.isArray(doctors) &&
+                  doctors.map((doc) => (
+                    <option key={doc._id} value={doc._id}>
+                      Dr. {doc.name}
+                    </option>
+                  ))}
               </select>
             )}
             {errors.doctorId && (
               <span className="text-danger-500 text-sm">
                 Doctor is required
               </span>
+            )}
+            {selectedDoctorId && (
+              <div>
+                <strong>Consultation Fee:</strong> ${fee || 0}
+              </div>
             )}
           </div>
           <div>
