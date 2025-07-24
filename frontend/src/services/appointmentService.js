@@ -14,8 +14,7 @@ export const checkDoctorAvailability = async (doctor, appointmentDate, appointme
 
 export const getDoctors = async () => {
   const response = await api.get('/doctors');
- // return response.data.data.doctors || [];
- return response.data || [];
+  return response.data; // This already contains { success: true, data: { doctors: [...] } }
 };
 
 export const appointmentService = {
