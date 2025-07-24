@@ -44,27 +44,40 @@ const PatientDashboard = () => {
     try {
       const [
         appointmentsRes,
-        patientsRes,
+        //  patientsRes,
         prescriptionsRes,
         healthDataRes,
         reportsRes,
       ] = await Promise.all([
         api.get("/appointments/patient"),
-        api.get(`/doctors/${user._id}/patients`),
+        // api.get(`/doctors/${user._id}/patients`),
         api.get("/prescriptions/patient"),
-        api.get("/health-data/patient"),
+        api.get(`/health/${user._id}`),
         api.get("/medical-records/patient"),
       ]);
 
+      // setStats({
+      //   appointments: appointmentsRes.data.appointments.length,
+      //   prescriptions: prescriptionsRes.data.length,
+      //   healthData: healthDataRes.data.length,
+      //   reports: reportsRes.data.length,
+      // });
+
       setStats({
-        appointments: appointmentsRes.data.length,
-        prescriptions: prescriptionsRes.data.length,
-        healthData: healthDataRes.data.length,
-        reports: reportsRes.data.length,
+        appointments: appointmentsRes?.data?.appointments?.length || 0,
+        prescriptions: prescriptionsRes?.data?.length || 0,
+        healthData: healthDataRes?.data?.length || 0,
+        reports: reportsRes?.data?.length || 0,
       });
 
-      setRecentAppointments(appointmentsRes.data.slice(0, 5));
-      setHealthData(healthDataRes.data.slice(-7)); // Last 7 days
+      setRecentAppointments(
+        appointmentsRes?.data?.appointments?.slice(0, 5) || []
+      );
+      const healthArray = Array.isArray(healthDataRes.data)
+        ? healthDataRes.data
+        : healthDataRes.data?.healthData || [];
+
+      setHealthData(healthArray.slice(-7));
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {

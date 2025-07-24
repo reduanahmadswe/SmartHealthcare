@@ -1,7 +1,8 @@
 
 const { validationResult } = require('express-validator');
-const doctorService = require('./doctor.service'); 
-const { asyncHandler } = require('../../middleware/errorHandler'); 
+const doctorService = require('./doctor.service');
+const { asyncHandler } = require('../../middleware/errorHandler');
+const User = require('../user/user.model');
 
 const doctorController = {
     registerDoctor: asyncHandler(async (req, res) => {
@@ -196,16 +197,49 @@ const doctorController = {
         });
     }),
 
-    getAllVerifiedDoctors: asyncHandler(async (req, res) => {
-        const doctors = await doctorService.getAllVerifiedDoctors();
+    // getAllVerifiedDoctors: asyncHandler(async (req, res) => {
+    //     const doctors = await doctorService.getAllVerifiedDoctors();
 
-        res.json({
-            success: true,
-            data: {
-                doctors
-            }
-        });
+    //     res.json({
+    //         success: true,
+    //         data: {
+    //             doctors
+    //         }
+    //     });
+    // }),
+
+    getAllVerifiedDoctors: asyncHandler(async (req, res) => {
+        try {
+            const doctors = await User.find({
+                role: 'doctor',
+                isVerified: true,
+                isActive: true
+            });
+
+            const formattedDoctors = doctors.map(doc => ({
+                _id: doc._id,
+                name: `${doc.firstName} ${doc.lastName}`,
+                email: doc.email,
+                phone: doc.phone,
+                specialization: doc.doctorInfo?.specialization || [],
+                consultationFee: doc.doctorInfo?.consultationFee || 0,
+                rating: doc.doctorInfo?.rating || 0,
+                totalReviews: doc.doctorInfo?.totalReviews || 0,
+                profilePicture: doc.profilePicture || ''
+            }));
+
+            res.status(200).json({
+                success: true,
+                data: {
+                    doctors: formattedDoctors
+                }
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
     }),
+
+
 
     getDoctorPatients: asyncHandler(async (req, res) => {
         const doctorId = req.params.id;

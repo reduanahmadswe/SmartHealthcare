@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import Button from "../../components/Button";
@@ -28,6 +28,7 @@ const BookAppointment = () => {
   const [doctorsLoading, setDoctorsLoading] = useState(true);
   const [fee, setFee] = useState("");
   const [availability, setAvailability] = useState(null);
+  const [selectedDoctorId, setSelectedDoctorId] = useState("");
   const {
     register,
     handleSubmit,
@@ -40,17 +41,42 @@ const BookAppointment = () => {
   const today = new Date().toISOString().split("T")[0];
 
   // Fetch doctors on mount
+  // useEffect(() => {
+  //   setDoctorsLoading(true);
+  //   getDoctors()
+  //     .then((response) => {
+  //       // Adjust this depending on your API shape
+  //       console.log("Doctors response:", response);
+  //       const docsArray = response?.data?.doctors || [];
+  //       if (Array.isArray(docsArray)) {
+  //         setDoctors(docsArray);
+  //       } else {
+  //         setDoctors([]);
+  //         console.warn("Expected doctors array but got:", docsArray);
+  //       }
+  //     })
+  //     .catch(() => setDoctors([]))
+  //     .finally(() => setDoctorsLoading(false));
+  // }, []);
   useEffect(() => {
     setDoctorsLoading(true);
     getDoctors()
-      .then((docs) => setDoctors(docs))
-      .catch(() => setDoctors([]))
+      .then((response) => {
+        console.log("Doctors response:", response);
+        // The backend returns: { success: true, data: { doctors: [...] } }
+        const doctorsArray = response?.data?.doctors || [];
+        setDoctors(doctorsArray);
+      })
+      .catch((error) => {
+        console.error("Error fetching doctors:", error);
+        setDoctors([]);
+      })
       .finally(() => setDoctorsLoading(false));
   }, []);
 
   // Auto-fill fee when doctor is selected
   useEffect(() => {
-    const selectedDoctor = doctors.find((d) => d._id === watch("doctorId"));
+    const selectedDoctor = doctors.find((d) => d._id === selectedDoctorId);
     setFee(
       selectedDoctor ? selectedDoctor.doctorInfo?.consultationFee || 0 : ""
     );
@@ -58,7 +84,9 @@ const BookAppointment = () => {
       "fee",
       selectedDoctor ? selectedDoctor.doctorInfo?.consultationFee || 0 : ""
     );
-  }, [watch("doctorId"), setValue, doctors]);
+    // Ensure doctorId is set in the form
+    setValue("doctorId", selectedDoctorId);
+  }, [selectedDoctorId, setValue, doctors]);
 
   // Check availability when doctor/date/time changes
   useEffect(() => {
@@ -85,10 +113,14 @@ const BookAppointment = () => {
               .map((s) => s.trim())
               .filter(Boolean)
           : [];
+
       const payload = {
         ...data,
         symptoms,
       };
+
+      console.log("Appointment payload:", payload); // Debug log
+
       await appointmentService.bookAppointment(payload);
       toast.success("Appointment booked successfully!");
       // Optionally redirect to /my-appointments
@@ -125,54 +157,66 @@ const BookAppointment = () => {
               <div className="text-center py-2">Loading doctors...</div>
             ) : (
               <select
-                {...register("doctorId", { required: true })}
+                {...register("doctorId", { required: "Doctor is required" })}
+                value={selectedDoctorId}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedDoctorId(value);
+                  setValue("doctorId", value);
+                }}
                 className="input w-full"
               >
                 <option value="">Select Doctor</option>
-                {doctors.map((doc) => (
-                  <option key={doc._id} value={doc._id}>
-                    Dr. {doc.firstName} {doc.lastName}{" "}
-                    {doc.doctorInfo?.specialization?.length
-                      ? `(${doc.doctorInfo.specialization.join(", ")})`
-                      : ""}{" "}
-                    - Fee: ${doc.doctorInfo?.consultationFee || 0}
-                  </option>
-                ))}
+                {Array.isArray(doctors) &&
+                  doctors.map((doc) => (
+                    <option key={doc._id} value={doc._id}>
+                      Dr. {doc.name}
+                    </option>
+                  ))}
               </select>
             )}
             {errors.doctorId && (
               <span className="text-danger-500 text-sm">
-                Doctor is required
+                {errors.doctorId.message}
               </span>
+            )}
+            {selectedDoctorId && (
+              <div>
+                <strong>Consultation Fee:</strong> ${fee || 0}
+              </div>
             )}
           </div>
           <div>
             <label>Date</label>
             <input
               type="date"
-              {...register("appointmentDate", { required: true })}
+              {...register("appointmentDate", { required: "Date is required" })}
               className="input w-full"
               min={today}
             />
             {errors.appointmentDate && (
-              <span className="text-danger-500 text-sm">Date is required</span>
+              <span className="text-danger-500 text-sm">
+                {errors.appointmentDate.message}
+              </span>
             )}
           </div>
           <div>
             <label>Time</label>
             <input
               type="time"
-              {...register("appointmentTime", { required: true })}
+              {...register("appointmentTime", { required: "Time is required" })}
               className="input w-full"
             />
             {errors.appointmentTime && (
-              <span className="text-danger-500 text-sm">Time is required</span>
+              <span className="text-danger-500 text-sm">
+                {errors.appointmentTime.message}
+              </span>
             )}
           </div>
           <div>
             <label>Type</label>
             <select
-              {...register("appointmentType", { required: true })}
+              {...register("appointmentType", { required: "Type is required" })}
               className="input w-full"
             >
               <option value="">Select Type</option>
@@ -183,13 +227,15 @@ const BookAppointment = () => {
               ))}
             </select>
             {errors.appointmentType && (
-              <span className="text-danger-500 text-sm">Type is required</span>
+              <span className="text-danger-500 text-sm">
+                {errors.appointmentType.message}
+              </span>
             )}
           </div>
           <div>
             <label>Mode</label>
             <select
-              {...register("appointmentMode", { required: true })}
+              {...register("appointmentMode", { required: "Mode is required" })}
               className="input w-full"
             >
               <option value="">Select Mode</option>
@@ -200,7 +246,9 @@ const BookAppointment = () => {
               ))}
             </select>
             {errors.appointmentMode && (
-              <span className="text-danger-500 text-sm">Mode is required</span>
+              <span className="text-danger-500 text-sm">
+                {errors.appointmentMode.message}
+              </span>
             )}
           </div>
           <div>
@@ -216,13 +264,15 @@ const BookAppointment = () => {
             <label>Fee</label>
             <input
               type="number"
-              {...register("fee", { required: true })}
+              {...register("fee", { required: "Fee is required" })}
               className="input w-full"
               value={fee}
               readOnly
             />
             {errors.fee && (
-              <span className="text-danger-500 text-sm">Fee is required</span>
+              <span className="text-danger-500 text-sm">
+                {errors.fee.message}
+              </span>
             )}
           </div>
           {availability === false && (

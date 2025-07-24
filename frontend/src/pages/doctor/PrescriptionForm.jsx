@@ -16,7 +16,8 @@ const emptyMedication = {
 };
 
 const PrescriptionForm = ({ appointmentPatient, appointmentId }) => {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const isDoctor = user && user.role === "doctor";
   const [patients, setPatients] = useState([]);
   const [loadingPatients, setLoadingPatients] = useState(false);
   const [form, setForm] = useState({
@@ -79,31 +80,59 @@ const PrescriptionForm = ({ appointmentPatient, appointmentId }) => {
     e.preventDefault();
     setSubmitting(true);
     setError("");
-    try {
-      if (!appointmentId) {
-        setError("Appointment ID is required to create a prescription.");
+
+    // Defensive validation
+    if (!appointmentId) {
+      setError("Appointment ID is required to create a prescription.");
+      setSubmitting(false);
+      return;
+    }
+    if (!form.diagnosis) {
+      setError("Diagnosis is required.");
+      setSubmitting(false);
+      return;
+    }
+    for (const med of form.medications) {
+      if (
+        !med.name ||
+        !med.amount ||
+        !med.unit ||
+        !med.frequency ||
+        !med.duration
+      ) {
+        setError("All medication fields are required.");
         setSubmitting(false);
         return;
       }
-      // Prepare payload for backend
-      const payload = {
-        appointmentId,
-        diagnosis: { primary: form.diagnosis },
-        medications: form.medications.map((med) => ({
-          name: med.name,
-          dosage: {
-            amount: Number(med.amount),
-            unit: med.unit,
-            frequency: med.frequency,
-            duration: med.duration,
-          },
-          instructions: med.instructions,
-        })),
-        followUp: form.followUpDate
-          ? { required: true, date: form.followUpDate }
-          : undefined,
-        digitalSignature: { doctorSignature: "placeholder" },
-      };
+    }
+
+    // Use doctor's name as a digital signature for now
+    const doctorSignature = user
+      ? `${user.firstName} ${user.lastName}`
+      : "Doctor";
+
+    // Prepare payload for backend
+    const payload = {
+      appointmentId,
+      diagnosis: { primary: form.diagnosis },
+      medications: form.medications.map((med) => ({
+        name: med.name,
+        dosage: {
+          amount: Number(med.amount),
+          unit: med.unit,
+          frequency: med.frequency,
+          duration: med.duration,
+        },
+        instructions: med.instructions,
+      })),
+      followUp: form.followUpDate
+        ? { required: true, date: form.followUpDate }
+        : undefined,
+      digitalSignature: { doctorSignature },
+    };
+
+    console.log("Prescription payload:", payload);
+    try {
       await prescriptionService.createPrescription(payload);
       setSuccess(true);
       setForm({
@@ -115,7 +144,12 @@ const PrescriptionForm = ({ appointmentPatient, appointmentId }) => {
         signature: "",
       });
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to create prescription");
+      console.error("Prescription error:", err?.response?.data);
+      setError(
+        err?.response?.data?.errors?.[0]?.msg ||
+          err?.response?.data?.message ||
+          "Failed to create prescription"
+      );
     } finally {
       setSubmitting(false);
     }
@@ -127,6 +161,11 @@ const PrescriptionForm = ({ appointmentPatient, appointmentId }) => {
       {!appointmentId && (
         <div className="text-danger-500 text-sm mb-2">
           Appointment ID is required to create a prescription.
+        </div>
+      )}
+      {(!isDoctor || !token) && (
+        <div className="text-danger-500 text-sm mb-2">
+          You must be logged in as a doctor to create a prescription.
         </div>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -270,7 +309,7 @@ const PrescriptionForm = ({ appointmentPatient, appointmentId }) => {
         <Button
           type="submit"
           loading={submitting}
-          disabled={submitting || !appointmentId}
+          disabled={submitting || !appointmentId || !isDoctor || !token}
           className="w-full"
         >
           {submitting ? "Submitting..." : "Create Prescription"}
