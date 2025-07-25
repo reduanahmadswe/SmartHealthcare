@@ -402,6 +402,33 @@ const emailTemplates = {
     </div>
   `
 }),
+doctorAwaitingVerification: (context) => ({
+  subject: `Registration Received - Awaiting Admin Verification`,
+  html: `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px;">Smart Healthcare Assistant</h1>
+        <p style="margin: 10px 0 0 0; font-size: 16px;">Doctor Registration Acknowledgment</p>
+      </div>
+      <div style="padding: 30px; background: #f9f9f9;">
+        <h2 style="color: #333; margin-bottom: 20px;">Hello Dr. ${context.name},</h2>
+        <p style="color: #666; line-height: 1.6;">
+          Thank you for registering with Smart Healthcare Assistant. Your account is currently under review by our admin team.
+        </p>
+        <p style="color: #666; line-height: 1.6;">
+          Once verified, you will receive an email confirmation and gain access to your dashboard.
+        </p>
+        <p style="color: #666; line-height: 1.6;">
+          We appreciate your patience during this process.
+        </p>
+      </div>
+      <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
+        <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
+      </div>
+    </div>
+  `
+})
+
 
 
 };
