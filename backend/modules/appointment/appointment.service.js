@@ -633,6 +633,26 @@ const appointmentService = {
             }
         };
     },
+
+    /**
+     * Find patient profile by unique patient ID
+     * @param {String} patientUniqueId - The unique 6-digit patient ID
+     * @returns {Promise<Object>} The appointment with patient details
+     */
+    findPatientByUniqueId: async (patientUniqueId) => {
+        const appointment = await Appointment.findByPatientUniqueId(patientUniqueId);
+        return appointment;
+    },
+
+    /**
+     * Get all appointments for a patient using unique patient ID
+     * @param {String} patientUniqueId - The unique 6-digit patient ID
+     * @returns {Promise<Array>} Array of appointments for the patient
+     */
+    getPatientAppointmentsByUniqueId: async (patientUniqueId) => {
+        const appointments = await Appointment.getAppointmentsByPatientId(patientUniqueId);
+        return appointments;
+    },
 };
 
 module.exports = appointmentService;

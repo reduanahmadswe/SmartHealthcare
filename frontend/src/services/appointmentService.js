@@ -119,4 +119,16 @@ export const appointmentService = {
     const response = await api.put(`/appointments/${id}/status`, { status, notes });
     return response.data;
   },
+
+  // Find patient by unique ID
+  findPatientByUniqueId: async (patientUniqueId) => {
+    const response = await api.get(`/appointments/patient-lookup/${patientUniqueId}`);
+    return response.data;
+  },
+
+  // Get patient appointment history by unique ID
+  getPatientAppointmentsByUniqueId: async (patientUniqueId) => {
+    const response = await api.get(`/appointments/patient-history/${patientUniqueId}`);
+    return response.data;
+  },
 }; 

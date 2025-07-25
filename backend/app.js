@@ -43,9 +43,13 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // ✅ Serve static uploads
 app.use('/uploads', express.static('uploads'));
 
-// ✅ Skip token validation for /auth routes
+// ✅ Skip token validation for /auth routes and test endpoints
 function authenticateTokenUnlessAuth(req, res, next) {
-  if (req.path.startsWith('/auth')) return next();
+  if (req.path.startsWith('/auth') || 
+      req.path === '/appointments/test' || 
+      req.path === '/appointments/test-unique-id') {
+    return next();
+  }
   authenticateToken(req, res, next);
 }
 

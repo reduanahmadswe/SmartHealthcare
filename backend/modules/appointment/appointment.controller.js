@@ -240,6 +240,50 @@ const appointmentController = {
             }
         });
     }),
+
+    // Find patient profile by unique patient ID
+    findPatientByUniqueId: asyncHandler(async (req, res) => {
+        const { patientUniqueId } = req.params;
+        
+        const appointment = await appointmentService.findPatientByUniqueId(patientUniqueId);
+        
+        if (!appointment) {
+            return res.status(404).json({
+                success: false,
+                message: 'Patient not found with this unique ID'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: {
+                patient: appointment.patient,
+                appointment: appointment
+            }
+        });
+    }),
+
+    // Get all appointments for a patient using unique ID
+    getPatientAppointmentsByUniqueId: asyncHandler(async (req, res) => {
+        const { patientUniqueId } = req.params;
+        
+        const appointments = await appointmentService.getPatientAppointmentsByUniqueId(patientUniqueId);
+        
+        if (!appointments || appointments.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'No appointments found for this patient ID'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: {
+                appointments,
+                patient: appointments[0].patient // Patient info from first appointment
+            }
+        });
+    }),
 };
 
 module.exports = appointmentController;

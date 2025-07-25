@@ -15,6 +15,29 @@ router.get('/test', (req, res) => {
     });
 });
 
+// @route   GET /api/appointments/test-unique-id
+// @desc    Test endpoint to check patient unique ID generation
+// @access  Public
+router.get('/test-unique-id', async (req, res) => {
+    try {
+        const Appointment = require('./appointment.model');
+        const uniqueId = await Appointment.generateUniquePatientId();
+        res.json({
+            success: true,
+            message: 'Unique ID generated successfully',
+            data: {
+                patientUniqueId: uniqueId
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Failed to generate unique ID',
+            error: error.message
+        });
+    }
+});
+
 // @route   POST /api/appointments
 // @desc    Book a new appointment
 // @access  Private (Patient only)
@@ -141,6 +164,26 @@ router.put(
     requireDoctorOrAdmin,
     appointmentValidation.updateConsultationNotes,
     appointmentController.updateConsultationNotes
+);
+
+// @route   GET /api/appointments/patient-lookup/:patientUniqueId
+// @desc    Find patient profile by unique patient ID
+// @access  Private (Doctor/Admin only)
+router.get(
+    '/patient-lookup/:patientUniqueId',
+    authenticateToken,
+    requireDoctorOrAdmin,
+    appointmentController.findPatientByUniqueId
+);
+
+// @route   GET /api/appointments/patient-history/:patientUniqueId
+// @desc    Get all appointments for a patient using unique patient ID
+// @access  Private (Doctor/Admin only)
+router.get(
+    '/patient-history/:patientUniqueId',
+    authenticateToken,
+    requireDoctorOrAdmin,
+    appointmentController.getPatientAppointmentsByUniqueId
 );
 
 module.exports = router;

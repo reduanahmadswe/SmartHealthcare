@@ -121,8 +121,25 @@ const BookAppointment = () => {
 
       console.log("Appointment payload:", payload); // Debug log
 
-      await appointmentService.bookAppointment(payload);
-      toast.success("Appointment booked successfully!");
+      const response = await appointmentService.bookAppointment(payload);
+
+      console.log("Booking response:", response); // Debug response structure
+      console.log("Appointment data:", response.data?.appointment); // Debug appointment data
+
+      // Show success message with patient unique ID
+      const patientUniqueId = response.data?.appointment?.patientUniqueId;
+      console.log("Patient Unique ID:", patientUniqueId); // Debug patient ID
+
+      if (patientUniqueId) {
+        toast.success(
+          `Appointment booked successfully! Your Patient ID is: ${patientUniqueId}. Please save this ID for future reference.`,
+          { duration: 8000 }
+        );
+      } else {
+        console.warn("Patient Unique ID not found in response");
+        toast.success("Appointment booked successfully!");
+      }
+
       // Optionally redirect to /my-appointments
       // navigate('/my-appointments');
     } catch (err) {
