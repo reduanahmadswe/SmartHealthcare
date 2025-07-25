@@ -1,8 +1,9 @@
 const { validationResult } = require("express-validator");
 const authService = require("./auth.service");
-const User = require("../user/user.model");
+const sendEmail = require("../../utils/emailService");
 
-// Register a new user
+// Register a new user (Doctor or Patient)
+
 exports.register = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -26,38 +27,93 @@ exports.register = async (req, res) => {
   } = req.body;
 
   try {
-    const { user, token } = await authService.registerUser({
-      firstName,
-      lastName,
-      email,
-      password,
-      phone,
-      dateOfBirth,
-      gender,
-      role,
-      address,
-      emergencyContact,
-    });
+    let user, token;
 
-    res.status(201).json({
+    if (role === "doctor") {
+      // 👨‍⚕️ Doctor Registration
+      user = await authService.registerDoctor({
+        firstName,
+        lastName,
+        email,
+        password,
+        phone,
+        dateOfBirth,
+        gender,
+        address,
+      });
+
+      // ✅ Email to Admin for doctor verification
+      await sendEmail({
+        to: process.env.ADMIN_EMAIL,
+        subject: "New Doctor Registration - Verification Required",
+        template: "newDoctorRegistration",
+        context: {
+          name: `${firstName} ${lastName}`,
+          email,
+        },
+      });
+
+      // ✅ Email to Doctor
+      await sendEmail({
+        to: email,
+        subject: "Registration Received - Awaiting Verification",
+        template: "doctorAwaitingVerification",
+        context: {
+          name: `${firstName} ${lastName}`,
+        },
+      });
+
+      token = null; // Doctor gets token after verification
+
+    } else {
+      // 🧍 Patient Registration
+      const result = await authService.registerUser({
+        firstName,
+        lastName,
+        email,
+        password,
+        phone,
+        dateOfBirth,
+        gender,
+        role,
+        address,
+        emergencyContact,
+      });
+      user = result.user;
+      token = result.token;
+
+      // ✅ Email to Patient
+      await sendEmail({
+        to: email,
+        subject: "Verify Your Email - Smart Healthcare Assistant",
+        template: "verifyEmail",
+        context: {
+          name: `${firstName} ${lastName}`,
+          verifyLink: `http://localhost:3000/verify-email?token=${token}`, // or dynamic base url
+        },
+      });
+    }
+
+    return res.status(201).json({
       success: true,
       message:
-        "User registered successfully. Please check your email for verification.",
+        role === "doctor"
+          ? "Doctor registered successfully. Awaiting admin verification."
+          : "User registered successfully. Please check your email for verification.",
       data: {
         user: user.getPublicProfile(),
         token,
       },
     });
   } catch (error) {
-    if (error.message === "User with this email already exists") {
-      return res.status(400).json({ success: false, message: error.message });
-    }
-    console.error("Registration error:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Server error during registration" });
+    console.error("❌ Registration error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Server error during registration",
+    });
   }
 };
+
 
 // Login user
 exports.login = async (req, res) => {

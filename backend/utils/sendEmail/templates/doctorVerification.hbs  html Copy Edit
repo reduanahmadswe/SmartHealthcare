@@ -1,9 +1,0 @@
-<h2>Welcome to Smart Healthcare</h2>
-<p>Hello Dr. {{name}},</p>
-
-<p>✅ {{verificationNotes}}</p>
-
-<p>You can now log in and start using your dashboard.</p>
-<a href="http://localhost:3000/login">Click here to log in</a>
-
-<p>Thanks,<br/>Smart Healthcare Team</p>

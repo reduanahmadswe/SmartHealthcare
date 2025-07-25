@@ -373,7 +373,37 @@ const emailTemplates = {
         </div>
       </div>
     `
-  })
+  }),
+  newDoctorRegistration: (context) => ({
+  subject: `New Doctor Registration - Verification Required`,
+  html: `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px;">Smart Healthcare Assistant</h1>
+        <p style="margin: 10px 0 0 0; font-size: 16px;">Doctor Verification Request</p>
+      </div>
+      <div style="padding: 30px; background: #f9f9f9;">
+        <h2 style="color: #333; margin-bottom: 20px;">Hello Admin,</h2>
+        <p style="color: #666; line-height: 1.6;">
+          A new doctor has registered and is awaiting verification. Please review their information and take the necessary action.
+        </p>
+        <div style="background: white; padding: 20px; border-radius: 5px; margin: 20px 0;">
+          <p><strong>Name:</strong> Dr. ${context.name}</p>
+          <p><strong>Email:</strong> ${context.email}</p>
+          <p><strong>Specialization:</strong> ${context.specialization}</p>
+        </div>
+        <p style="color: #666; line-height: 1.6;">
+          You can verify this doctor from the admin dashboard.
+        </p>
+      </div>
+      <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
+        <p style="margin: 0;">© 2025 Smart Healthcare Assistant. All rights reserved.</p>
+      </div>
+    </div>
+  `
+}),
+
+
 };
 
 // Send email function

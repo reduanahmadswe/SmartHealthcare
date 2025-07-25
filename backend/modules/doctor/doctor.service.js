@@ -13,6 +13,8 @@ const doctorService = {
    * @throws {Error} If user with email already exists.
    */
   registerDoctor: async (doctorData) => {
+
+    console.log("🚀 registerDoctor called");
     const {
       firstName,
       lastName,
@@ -58,9 +60,9 @@ const doctorService = {
         certifications: certifications || [],
       },
     });
-    console.log("Admin email from ENV:", process.env.ADMIN_EMAIL);
 
     await doctor.save();
+    console.log("Sending registration email to:", process.env.ADMIN_EMAIL);
 
     try {
       await sendEmail({
@@ -77,7 +79,7 @@ const doctorService = {
       console.error("❌ Failed to send admin email:", err);
     }
 
-    console.log("Sending registration email to:", process.env.ADMIN_EMAIL);
+    
 
     return doctor.getPublicProfile();
   },
