@@ -12,9 +12,29 @@ export const adminService = {
   },
 
   // Get user management data
-  getUserManagementData: async () => {
+  getUsers: async () => {
     try {
       const response = await api.get("/admin/users");
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Update user status
+  updateUserStatus: async (userId, statusData) => {
+    try {
+      const response = await api.put(`/admin/users/${userId}/status`, statusData);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Delete user
+  deleteUser: async (userId) => {
+    try {
+      const response = await api.delete(`/admin/users/${userId}`);
       return response.data;
     } catch (error) {
       throw error;
