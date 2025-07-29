@@ -15,6 +15,7 @@ const {
     validateUnverifiedDoctorsQuery,
     validateLogsQuery
 } = require('./admin.validation');
+const adminMiddleware = require('../../middleware/adminMiddleware');
 
 const router = express.Router();
 
@@ -25,6 +26,18 @@ router.use(authenticateToken, requireAdmin);
 // @desc    Get admin dashboard statistics
 // @access  Private (Admin only)
 router.get('/dashboard', validateDashboardQuery, asyncHandler(AdminController.getDashboardStatistics));
+
+
+
+// @route   GET /api/admin/pending-doctors
+// @desc    Get all pending doctor registrations
+// @access  Private (Admin only)
+router.get('/pending-doctors', adminMiddleware,asyncHandler(AdminController.getPendingDoctors));
+
+// @route   PATCH /api/admin/approve-doctor/:id
+// @desc    Approve a doctor registration
+// @access  Private (Admin only)
+router.patch('/approve-doctor/:id',adminMiddleware, asyncHandler(AdminController.approveDoctor));
 
 // @route   GET /api/admin/users
 // @desc    Get all users with pagination and filters

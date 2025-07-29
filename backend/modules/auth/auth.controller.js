@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const authService = require("./auth.service");
-const sendEmail = require("../../utils/emailService");
+const { sendEmail } = require("../../utils/emailService");
+
 
 // Register a new user (Doctor or Patient)
 
