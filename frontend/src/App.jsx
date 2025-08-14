@@ -1,4 +1,3 @@
-import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
@@ -25,17 +24,19 @@ import Prescriptions from "./pages/patient/Prescriptions";
 import Profile from "./pages/patient/Profile";
 
 // Doctor Pages
+import DoctorChat from "./pages/doctor/Chat";
 import DoctorAppointments from "./pages/doctor/DoctorAppointments";
-import DoctorChat from "./pages/doctor/DoctorChat";
+import DoctorAvailability from "./pages/doctor/DoctorAvailability";
 import DoctorPrescriptions from "./pages/doctor/DoctorPrescriptions";
 import DoctorReports from "./pages/doctor/DoctorReports";
 import DoctorSettings from "./pages/doctor/DoctorSettings";
 import Patients from "./pages/doctor/Patients";
 
 // Admin Pages
-import { AdminAppointments } from "./pages/admin";
 import ActivityLogs from "./pages/admin/ActivityLogs";
+import AdminAppointments from "./pages/admin/AdminAppointments";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminUserManagement from "./pages/admin/AdminUserManagement";
 import Analytics from "./pages/admin/Analytics";
 import DoctorKYC from "./pages/admin/DoctorKYC";
 import Inventory from "./pages/admin/Inventory";
@@ -199,6 +200,14 @@ const App = () => {
           }
         />
         <Route
+          path="/doctor/availability"
+          element={
+            <ProtectedRoute allowedRoles={["doctor"]}>
+              <DoctorAvailability />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/doctor/reports"
           element={
             <ProtectedRoute allowedRoles={["doctor"]}>
@@ -221,6 +230,14 @@ const App = () => {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminUserManagement />
             </ProtectedRoute>
           }
         />

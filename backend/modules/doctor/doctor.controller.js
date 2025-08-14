@@ -5,25 +5,25 @@ const { asyncHandler } = require('../../middleware/errorHandler');
 const User = require('../user/user.model');
 
 const doctorController = {
-    registerDoctor: asyncHandler(async (req, res) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                errors: errors.array()
-            });
-        }
+    // registerDoctor: asyncHandler(async (req, res) => {
+    //     const errors = validationResult(req);
+    //     if (!errors.isEmpty()) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             errors: errors.array()
+    //         });
+    //     }
 
-        const doctor = await doctorService.registerDoctor(req.body);
+    //     const doctor = await doctorService.registerDoctor(req.body);
 
-        res.status(201).json({
-            success: true,
-            message: 'Doctor registered successfully. Please wait for admin verification.',
-            data: {
-                doctor
-            }
-        });
-    }),
+    //     res.status(201).json({
+    //         success: true,
+    //         message: 'Doctor registered successfully. Please wait for admin verification.',
+    //         data: {
+    //             doctor
+    //         }
+    //     });
+    // }),
 
     updateDoctorProfile: asyncHandler(async (req, res) => {
         const errors = validationResult(req);

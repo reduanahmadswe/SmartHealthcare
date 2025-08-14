@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   IoCalendarOutline,
   IoChatbubbleOutline,
@@ -260,12 +260,22 @@ const DoctorDashboard = () => {
               </Link>
 
               <Link
-                to="/chat"
+                to="/doctor/chat"
                 className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-yellow-300 hover:bg-yellow-50 dark:border-gray-700 dark:hover:border-yellow-600 dark:hover:bg-yellow-900/20 transition-colors"
               >
                 <IoChatbubbleOutline className="h-8 w-8 text-yellow-600 mb-2" />
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   Patient Chat
+                </span>
+              </Link>
+
+              <Link
+                to="/doctor/availability"
+                className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 dark:border-gray-700 dark:hover:border-green-600 dark:hover:bg-green-900/20 transition-colors"
+              >
+                <IoTimeOutline className="h-8 w-8 text-green-600 mb-2" />
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  Availability
                 </span>
               </Link>
             </div>

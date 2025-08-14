@@ -1,13 +1,65 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const User = require('../user/user.model'); 
-const { sendEmail } = require('../../utils/emailService'); 
+const  sendEmail  = require('../../utils/emailService'); 
+const bcrypt = require("bcryptjs");
 
 // Generate JWT Token
 const generateToken = (userId) => {
     return jwt.sign({ userId }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE || '7d'
     });
+};
+
+
+exports.registerDoctor = async ({
+  firstName,
+  lastName,
+  email,
+  password,
+  phone,
+  dateOfBirth,
+  gender,
+  address,
+  specialization,
+  experience,
+  licenseNumber,
+  consultationFee,
+  education,
+  certifications,
+}) => {
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new Error("User with this email already exists");
+  }
+
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Create new doctor (with isVerified false by default)
+  const doctor = new User({
+    firstName,
+    lastName,
+    email,
+    password: hashedPassword,
+    phone,
+    dateOfBirth,
+    gender,
+    role: "doctor",
+    address,
+    specialization,
+    experience,
+    licenseNumber,
+    consultationFee,
+    education,
+    certifications,
+    isVerified: false,
+  });
+
+  await doctor.save();
+
+  return doctor;
 };
 
 // Register a new user

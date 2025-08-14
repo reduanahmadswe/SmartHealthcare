@@ -10,11 +10,11 @@ const router = express.Router();
 // @route   POST /api/doctors/register
 // @desc    Register a new doctor
 // @access  Public
-router.post(
-    '/register',
-    doctorValidation.registerDoctor,
-    doctorController.registerDoctor
-);
+// router.post(
+//     '/register',
+//     doctorValidation.registerDoctor,
+//     doctorController.registerDoctor
+// );
 
 // @route   PUT /api/doctors/profile
 // @desc    Update doctor profile

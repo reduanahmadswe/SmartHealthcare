@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const appointmentSchema = new mongoose.Schema({
+    // Unique Patient ID for this appointment
+    patientUniqueId: {
+        type: String,
+        unique: true
+    },
+    
     // Basic Information
     patient: {
         type: mongoose.Schema.Types.ObjectId,
@@ -253,8 +259,13 @@ appointmentSchema.virtual('isOverdue').get(function() {
     return appointmentDateTime < now && this.status === 'confirmed';
 });
 
-// Pre-save middleware to validate appointment time
-appointmentSchema.pre('save', function(next) {
+// Pre-save middleware to validate appointment time and generate unique patient ID
+appointmentSchema.pre('save', async function(next) {
+    // Generate unique patient ID for new appointments
+    if (this.isNew && !this.patientUniqueId) {
+        this.patientUniqueId = await this.constructor.generateUniquePatientId();
+    }
+
     // Check if appointment date is not in the past
     const appointmentDateTime = new Date(this.appointmentDate);
     const now = new Date();
@@ -271,6 +282,40 @@ appointmentSchema.pre('save', function(next) {
 
     next();
 });
+
+// Static method to generate unique 6-digit patient ID
+appointmentSchema.statics.generateUniquePatientId = async function() {
+    let isUnique = false;
+    let patientId;
+    
+    while (!isUnique) {
+        // Generate random 6-digit number
+        patientId = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Check if this ID already exists
+        const existingAppointment = await this.findOne({ patientUniqueId: patientId });
+        if (!existingAppointment) {
+            isUnique = true;
+        }
+    }
+    
+    return patientId;
+};
+
+// Static method to find appointment by patient unique ID
+appointmentSchema.statics.findByPatientUniqueId = async function(patientUniqueId) {
+    return await this.findOne({ patientUniqueId })
+        .populate('patient', 'firstName lastName email phone dateOfBirth gender address')
+        .populate('doctor', 'firstName lastName email phone doctorInfo');
+};
+
+// Static method to get all appointments for a patient using unique ID
+appointmentSchema.statics.getAppointmentsByPatientId = async function(patientUniqueId) {
+    return await this.find({ patientUniqueId })
+        .populate('patient', 'firstName lastName email phone dateOfBirth gender address')
+        .populate('doctor', 'firstName lastName email phone doctorInfo')
+        .sort({ appointmentDate: -1 });
+};
 
 // Static method to check availability
 appointmentSchema.statics.checkAvailability = async function(doctorId, date, time, duration = 30) {

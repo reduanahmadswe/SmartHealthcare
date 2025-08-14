@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   IoAnalyticsOutline,
   IoCheckmarkCircleOutline,
@@ -270,6 +270,16 @@ const AdminDashboard = () => {
                 <IoClipboardOutline className="h-8 w-8 text-purple-600 mb-2" />
                 <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                   Activity Logs
+                </span>
+              </Link>
+
+              <Link
+                to="/admin/users"
+                className="flex flex-col items-center p-4 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 dark:border-gray-700 dark:hover:border-indigo-600 dark:hover:bg-indigo-900/20 transition-colors"
+              >
+                <IoPeopleOutline className="h-8 w-8 text-indigo-600 mb-2" />
+                <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  User Management
                 </span>
               </Link>
             </div>
