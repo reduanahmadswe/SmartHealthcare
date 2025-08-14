@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import Input from "../../components/Input";
@@ -109,7 +109,8 @@ const DoctorChat = () => {
                     <div
                       key={conversation.appointmentId}
                       className={`p-3 rounded-lg cursor-pointer border transition-colors ${
-                        selectedConversation?.appointmentId === conversation.appointmentId
+                        selectedConversation?.appointmentId ===
+                        conversation.appointmentId
                           ? "bg-primary-50 border-primary-200 dark:bg-primary-900/20 dark:border-primary-600"
                           : "bg-gray-50 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
                       }`}
@@ -126,10 +127,12 @@ const DoctorChat = () => {
                             {conversation.otherUser?.name || "Patient"}
                           </p>
                           <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                            {conversation.lastMessage?.content || "No messages yet"}
+                            {conversation.lastMessage?.content ||
+                              "No messages yet"}
                           </p>
                           <p className="text-xs text-gray-400 dark:text-gray-500">
-                            {conversation.appointmentDate} • {conversation.appointmentTime}
+                            {conversation.appointmentDate} •{" "}
+                            {conversation.appointmentTime}
                           </p>
                         </div>
                         {conversation.unreadCount > 0 && (
@@ -150,12 +153,15 @@ const DoctorChat = () => {
             <Card.Header>
               <h3 className="text-lg font-semibold">
                 {selectedConversation
-                  ? `Chat with ${selectedConversation.otherUser?.name || "Patient"}`
+                  ? `Chat with ${
+                      selectedConversation.otherUser?.name || "Patient"
+                    }`
                   : "Select a conversation"}
               </h3>
               {selectedConversation && (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Appointment: {selectedConversation.appointmentDate} at {selectedConversation.appointmentTime}
+                  Appointment: {selectedConversation.appointmentDate} at{" "}
+                  {selectedConversation.appointmentTime}
                 </p>
               )}
             </Card.Header>

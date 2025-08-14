@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   IoAddOutline,
   IoCalendarOutline,
   IoCheckmarkCircleOutline,
-  IoCloseCircleOutline,
   IoTimeOutline,
 } from "react-icons/io5";
 import Button from "../../components/Button";
@@ -83,7 +82,9 @@ const DoctorAvailability = () => {
   };
 
   const handleDelete = async (slotId) => {
-    if (window.confirm("Are you sure you want to delete this availability slot?")) {
+    if (
+      window.confirm("Are you sure you want to delete this availability slot?")
+    ) {
       try {
         await api.delete(`/doctors/availability/${slotId}`);
         fetchAvailability();
@@ -118,7 +119,8 @@ const DoctorAvailability = () => {
 
   const getStatusColor = (isAvailable, currentBookings, maxAppointments) => {
     if (!isAvailable) return "text-red-600 bg-red-100";
-    if (currentBookings >= maxAppointments) return "text-yellow-600 bg-yellow-100";
+    if (currentBookings >= maxAppointments)
+      return "text-yellow-600 bg-yellow-100";
     return "text-green-600 bg-green-100";
   };
 
@@ -168,7 +170,8 @@ const DoctorAvailability = () => {
                   <div className="text-center py-8">
                     <IoCalendarOutline className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500 dark:text-gray-400">
-                      No availability slots found. Add your first availability slot to get started.
+                      No availability slots found. Add your first availability
+                      slot to get started.
                     </p>
                     <Button
                       onClick={() => {
@@ -196,7 +199,8 @@ const DoctorAvailability = () => {
                         <Card.Description className="flex items-center space-x-2">
                           <IoTimeOutline className="h-4 w-4" />
                           <span>
-                            {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                            {formatTime(slot.startTime)} -{" "}
+                            {formatTime(slot.endTime)}
                           </span>
                         </Card.Description>
                       </div>
@@ -218,7 +222,8 @@ const DoctorAvailability = () => {
                   <Card.Content>
                     <div className="space-y-2 text-sm">
                       <div>
-                        <span className="font-medium">Max Appointments:</span> {slot.maxAppointments}
+                        <span className="font-medium">Max Appointments:</span>{" "}
+                        {slot.maxAppointments}
                       </div>
                       <div>
                         <span className="font-medium">Current Bookings:</span>{" "}
@@ -226,7 +231,8 @@ const DoctorAvailability = () => {
                       </div>
                       {slot.notes && (
                         <div>
-                          <span className="font-medium">Notes:</span> {slot.notes}
+                          <span className="font-medium">Notes:</span>{" "}
+                          {slot.notes}
                         </div>
                       )}
                     </div>
@@ -273,7 +279,9 @@ const DoctorAvailability = () => {
               <Input
                 type="date"
                 value={formData.date}
-                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
                 min={today}
                 required
               />
@@ -287,7 +295,9 @@ const DoctorAvailability = () => {
                 <Input
                   type="time"
                   value={formData.startTime}
-                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, startTime: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -298,7 +308,9 @@ const DoctorAvailability = () => {
                 <Input
                   type="time"
                   value={formData.endTime}
-                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, endTime: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -314,7 +326,10 @@ const DoctorAvailability = () => {
                 max="20"
                 value={formData.maxAppointments}
                 onChange={(e) =>
-                  setFormData({ ...formData, maxAppointments: parseInt(e.target.value) })
+                  setFormData({
+                    ...formData,
+                    maxAppointments: parseInt(e.target.value),
+                  })
                 }
                 required
               />
@@ -325,7 +340,9 @@ const DoctorAvailability = () => {
                 <input
                   type="checkbox"
                   checked={formData.isAvailable}
-                  onChange={(e) => setFormData({ ...formData, isAvailable: e.target.checked })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, isAvailable: e.target.checked })
+                  }
                   className="rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-300 focus:ring focus:ring-primary-200 focus:ring-opacity-50"
                 />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -340,7 +357,9 @@ const DoctorAvailability = () => {
               </label>
               <textarea
                 value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
                 rows="3"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 placeholder="Any special notes for this time slot..."

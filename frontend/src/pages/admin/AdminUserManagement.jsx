@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   IoCheckmarkCircleOutline,
   IoCloseCircleOutline,
   IoEyeOutline,
-  IoMedicalOutline,
   IoPeopleOutline,
   IoSearchOutline,
   IoStatsChartOutline,
@@ -46,13 +45,13 @@ const AdminUserManagement = () => {
       const response = await adminService.getUsers();
       const userData = response.data.users || [];
       setUsers(userData);
-      
+
       // Calculate stats
       const stats = {
         totalUsers: userData.length,
-        activeUsers: userData.filter(user => user.isActive).length,
-        inactiveUsers: userData.filter(user => !user.isActive).length,
-        pendingVerification: userData.filter(user => !user.isVerified).length,
+        activeUsers: userData.filter((user) => user.isActive).length,
+        inactiveUsers: userData.filter((user) => !user.isActive).length,
+        pendingVerification: userData.filter((user) => !user.isVerified).length,
       };
       setStats(stats);
     } catch (error) {
@@ -96,19 +95,31 @@ const AdminUserManagement = () => {
       let response;
       switch (action) {
         case "activate":
-          response = await adminService.updateUserStatus(userId, { isActive: true });
+          response = await adminService.updateUserStatus(userId, {
+            isActive: true,
+          });
           break;
         case "deactivate":
-          response = await adminService.updateUserStatus(userId, { isActive: false });
+          response = await adminService.updateUserStatus(userId, {
+            isActive: false,
+          });
           break;
         case "verify":
-          response = await adminService.updateUserStatus(userId, { isVerified: true });
+          response = await adminService.updateUserStatus(userId, {
+            isVerified: true,
+          });
           break;
         case "unverify":
-          response = await adminService.updateUserStatus(userId, { isVerified: false });
+          response = await adminService.updateUserStatus(userId, {
+            isVerified: false,
+          });
           break;
         case "delete":
-          if (window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+          if (
+            window.confirm(
+              "Are you sure you want to delete this user? This action cannot be undone."
+            )
+          ) {
             response = await adminService.deleteUser(userId);
           } else {
             return;
@@ -117,7 +128,7 @@ const AdminUserManagement = () => {
         default:
           return;
       }
-      
+
       if (response) {
         fetchUsers();
       }
@@ -302,7 +313,9 @@ const AdminUserManagement = () => {
             ) : filteredUsers.length === 0 ? (
               <div className="text-center py-8">
                 <IoPeopleOutline className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No users found</p>
+                <p className="text-gray-500 dark:text-gray-400">
+                  No users found
+                </p>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -328,13 +341,17 @@ const AdminUserManagement = () => {
                   </thead>
                   <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                     {filteredUsers.map((user) => (
-                      <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                      <tr
+                        key={user._id}
+                        className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
                               <div className="h-10 w-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
                                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                  {user.firstName.charAt(0)}{user.lastName.charAt(0)}
+                                  {user.firstName.charAt(0)}
+                                  {user.lastName.charAt(0)}
                                 </span>
                               </div>
                             </div>
@@ -354,12 +371,21 @@ const AdminUserManagement = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
+                              user.role
+                            )}`}
+                          >
                             {user.role}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(user.isActive, user.isVerified)}`}>
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                              user.isActive,
+                              user.isVerified
+                            )}`}
+                          >
                             {getStatusText(user.isActive, user.isVerified)}
                           </span>
                         </td>
@@ -381,7 +407,9 @@ const AdminUserManagement = () => {
                               <Button
                                 size="sm"
                                 variant="danger"
-                                onClick={() => handleUserAction(user._id, "deactivate")}
+                                onClick={() =>
+                                  handleUserAction(user._id, "deactivate")
+                                }
                               >
                                 Deactivate
                               </Button>
@@ -389,7 +417,9 @@ const AdminUserManagement = () => {
                               <Button
                                 size="sm"
                                 variant="success"
-                                onClick={() => handleUserAction(user._id, "activate")}
+                                onClick={() =>
+                                  handleUserAction(user._id, "activate")
+                                }
                               >
                                 Activate
                               </Button>
@@ -398,7 +428,9 @@ const AdminUserManagement = () => {
                               <Button
                                 size="sm"
                                 variant="primary"
-                                onClick={() => handleUserAction(user._id, "verify")}
+                                onClick={() =>
+                                  handleUserAction(user._id, "verify")
+                                }
                               >
                                 Verify
                               </Button>
@@ -441,7 +473,7 @@ const AdminUserManagement = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Email
@@ -468,7 +500,11 @@ const AdminUserManagement = () => {
                     Role
                   </label>
                   <p className="mt-1">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(selectedUser.role)}`}>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(
+                        selectedUser.role
+                      )}`}
+                    >
                       {selectedUser.role}
                     </span>
                   </p>
@@ -478,8 +514,16 @@ const AdminUserManagement = () => {
                     Status
                   </label>
                   <p className="mt-1">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(selectedUser.isActive, selectedUser.isVerified)}`}>
-                      {getStatusText(selectedUser.isActive, selectedUser.isVerified)}
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(
+                        selectedUser.isActive,
+                        selectedUser.isVerified
+                      )}`}
+                    >
+                      {getStatusText(
+                        selectedUser.isActive,
+                        selectedUser.isVerified
+                      )}
                     </span>
                   </p>
                 </div>
@@ -526,10 +570,7 @@ const AdminUserManagement = () => {
               )}
 
               <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowModal(false)}
-                >
+                <Button variant="outline" onClick={() => setShowModal(false)}>
                   Close
                 </Button>
                 <Button
